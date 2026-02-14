@@ -2,7 +2,7 @@
 
 Book 3 anchor: **batch/backfill plans you can prove**.
 
-**Pitch:** Book 2 proves a single run. Book 3 proves many runs: a deterministic plan you can review/diff, and (later) apply safely with batch evidence.
+**Pitch:** Book 2 proves a single run. Book 3 proves many runs: a deterministic plan you can review/diff, and an apply lane you can verify (PR2 is dry-run only).
 
 ## Quick start
 
@@ -16,15 +16,15 @@ Then follow the reader path:
 
 - `docs/QUICKSTART.md`
 
-Or just run the deterministic demo:
-
-```bash
-go run ./cmd/pfbackfill demo --out ./out/demo
-```
-
 ## Contract
 
-See:
+Commands:
+
+- `pfbackfill render` — render deterministic plan evidence
+- `pfbackfill apply` — apply lane (PR2 dry-run) deterministic batch evidence
+- `pfbackfill demo` — recompute fixtures and diff goldens
+
+Docs:
 
 - `docs/CONTRACT.md`
 - `docs/CONVENTIONS.md`

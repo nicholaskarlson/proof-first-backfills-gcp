@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"sort"
 
+	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/apply"
+	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/model"
 	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/pfutil"
 	"gopkg.in/yaml.v3"
 )
@@ -75,21 +77,6 @@ func loadConfig(path string) (*Config, error) {
 	return &c, nil
 }
 
-type PlanRun struct {
-	RunID string `json:"run_id"`
-	Left  string `json:"left"`
-	Right string `json:"right"`
-}
-
-type PlanManifest struct {
-	ProjectID    string    `json:"project_id"`
-	Region       string    `json:"region"`
-	InputBucket  string    `json:"input_bucket"`
-	OutputBucket string    `json:"output_bucket"`
-	ServiceName  string    `json:"service_name"`
-	Runs         []PlanRun `json:"runs"`
-}
-
 func writeError(outDir, msg string) error {
 	if err := pfutil.ResetOutDir(outDir); err != nil {
 		return err
@@ -103,13 +90,13 @@ func render(cfg *Config, outDir string) error {
 	}
 
 	// Deterministic: sort runs by run_id.
-	runs := make([]PlanRun, 0, len(cfg.Runs))
+	runs := make([]model.PlanRun, 0, len(cfg.Runs))
 	for _, r := range cfg.Runs {
-		runs = append(runs, PlanRun{RunID: r.RunID, Left: r.Left, Right: r.Right})
+		runs = append(runs, model.PlanRun{RunID: r.RunID, Left: r.Left, Right: r.Right})
 	}
 	sort.Slice(runs, func(i, j int) bool { return runs[i].RunID < runs[j].RunID })
 
-	manifest := PlanManifest{
+	manifest := model.PlanManifest{
 		ProjectID:    cfg.ProjectID,
 		Region:       cfg.Region,
 		InputBucket:  cfg.InputBucket,
@@ -155,6 +142,12 @@ func demo(outDir string) int {
 		} else {
 			if err := render(cfg, outCase); err != nil {
 				_ = writeError(outCase, err.Error())
+			} else {
+				planPath := filepath.Join(outCase, "plan_manifest.json")
+				applyOut := filepath.Join(outCase, "apply")
+				if err := apply.ApplyDryRun(planPath, applyOut); err != nil {
+					_ = writeError(outCase, err.Error())
+				}
 			}
 		}
 
@@ -170,7 +163,7 @@ func demo(outDir string) int {
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("usage: pfbackfill <render|demo> [args]")
+		fmt.Println("usage: pfbackfill <render|apply|demo> [args]")
 		os.Exit(2)
 	}
 
@@ -190,6 +183,20 @@ func main() {
 			os.Exit(1)
 		}
 		if err := render(cfg, *outDir); err != nil {
+			_ = writeError(*outDir, err.Error())
+			os.Exit(1)
+		}
+
+	case "apply":
+		fs := flag.NewFlagSet("apply", flag.ExitOnError)
+		planPath := fs.String("plan", "", "path to plan_manifest.json (must have sibling manifest.sha256)")
+		outDir := fs.String("out", "", "output directory (cleared)")
+		_ = fs.Parse(os.Args[2:])
+		if *planPath == "" || *outDir == "" {
+			fmt.Println("apply requires --plan and --out")
+			os.Exit(2)
+		}
+		if err := apply.ApplyDryRun(*planPath, *outDir); err != nil {
 			_ = writeError(*outDir, err.Error())
 			os.Exit(1)
 		}
