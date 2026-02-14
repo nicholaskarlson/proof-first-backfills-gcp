@@ -12,6 +12,10 @@ Run the proof gate:
 make verify
 ```
 
+Then follow the reader path:
+
+- `docs/QUICKSTART.md`
+
 Or just run the deterministic demo:
 
 ```bash
@@ -21,10 +25,12 @@ go run ./cmd/pfbackfill demo --out ./out/demo
 ## Contract
 
 See:
+
 - `docs/CONTRACT.md`
 - `docs/CONVENTIONS.md`
 - `docs/HANDOFF.md`
 
 Fixtures + goldens live in:
+
 - `fixtures/input/**`
 - `fixtures/expected/**`

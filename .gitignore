@@ -1,4 +1,11 @@
 /out/
 /bin/
 /tmp/
-/.DS_Store
+.DS_Store
+
+# Drop-ins are shipped out-of-band. Do not commit.
+book*-pr*-*-dropin.zip
+book*-pr*-*.patch.txt
+
+# Repo-local helper dirs (if you choose to use them later).
+/dropins/

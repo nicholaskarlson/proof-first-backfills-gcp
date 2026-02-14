@@ -1,0 +1,8 @@
+project_id: demo-proj
+region: us-central1
+input_bucket: demo-input-bucket
+output_bucket: demo-output-bucket
+service_name: pf-drop
+runs:
+  - run_id: caseA
+    left: fixtures/demo/left.csv
