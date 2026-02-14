@@ -1,0 +1,36 @@
+Book 3 PR0 drop-in: proof-first-backfills-gcp (pfbackfill)
+
+You have two ways to apply this drop-in.
+
+Option A: Unzip the drop-in tree into an EMPTY repo folder
+----------------------------------------------------------
+1) Create the repo folder and init git:
+
+   mkdir -p ~/projects/proof-first/proof-first-backfills-gcp
+   cd ~/projects/proof-first/proof-first-backfills-gcp
+   git init
+   git switch -c main
+
+2) Unzip the drop-in into the repo root:
+
+   unzip -o book3-pr0-pfbackfill-dropin.zip -d .
+
+3) Verify:
+
+   make verify
+
+Option B: Apply the patch (creates files)
+----------------------------------------
+1) Create the repo folder and init git as above.
+2) Apply:
+
+   git apply book3-pr0-pfbackfill.patch.txt
+
+3) Verify:
+
+   make verify
+
+Then commit + push:
+
+   git add .
+   git commit -m "scaffold: Book3 anchor (pfbackfill)"
