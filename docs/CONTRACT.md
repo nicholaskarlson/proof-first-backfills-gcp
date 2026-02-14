@@ -1,7 +1,9 @@
 # Contract (Book 3 Anchor)
 
-`pfbackfill` starts Book 3 with one rock-solid contract:
-**render a batch/backfill plan into deterministic evidence artifacts.**
+`pfbackfill` is built in lanes.
+
+- **Render lane:** deterministic plan artifacts you can review/diff.
+- **Apply lane:** deterministic batch evidence (PR2 is **dry-run only**).
 
 ## Commands
 
@@ -14,6 +16,19 @@ pfbackfill render --config ./config.yaml --out ./out/render
 On success, `--out` contains:
 - `plan_manifest.json` (deterministic intent)
 - `manifest.sha256` (sha256 over `plan_manifest.json`)
+
+On failure, `--out` contains **only**:
+- `error.txt` (with trailing newline)
+
+### Apply (PR2: dry-run)
+
+```bash
+pfbackfill apply --plan ./out/render/plan_manifest.json --out ./out/apply
+```
+
+On success, `--out` contains:
+- `batch_report.json` (deterministic apply-lane evidence)
+- `manifest.sha256` (sha256 over `batch_report.json`)
 
 On failure, `--out` contains **only**:
 - `error.txt` (with trailing newline)
