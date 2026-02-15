@@ -1,8 +1,8 @@
-# Quick Start (PR4)
+# Quick Start (PR6)
 
 This is the smallest “reader path” through the repo.
 
-PR2 adds the **apply lane** (dry-run only). The system is still deterministic: no network calls, no timestamps, no non-determinism.
+PR5 adds the **local lane** (run-folder simulation). PR6 tightens safety + requires a plan witness. The system is still deterministic: no network calls, no timestamps, no non-determinism.
 
 ## Contract
 
@@ -35,6 +35,10 @@ PR2 adds the **apply lane** (dry-run only). The system is still deterministic: n
 - `manifest.sha256` — sha256 over all files under the local lane
 - `runs/<run_id>/run_meta.json` — per-run metadata
 - `runs/<run_id>/done.json` — resumability marker
+
+Notes:
+- `local` does **not** clear `--out`; existing `done.json` files are left untouched.
+- `local` requires a sibling `manifest.sha256` next to `plan_manifest.json` (the plan witness).
 
 ### Expected-fail
 

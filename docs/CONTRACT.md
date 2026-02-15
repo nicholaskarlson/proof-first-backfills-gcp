@@ -47,11 +47,14 @@ On success, `--out` contains:
 On failure, `--out` contains **only**:
 - `error.txt` (with trailing newline)
 
-### Local (PR5: local execution lane, no cloud)
+### Local (PR6: local execution lane, no cloud)
 
 ```bash
 pfbackfill local --plan ./out/render/plan_manifest.json --out ./out/local
 ```
+
+Notes:
+- `local` requires a sibling `manifest.sha256` next to `plan_manifest.json` (the plan witness).
 
 On success, `--out` contains:
 - `local_report.json` (deterministic local execution evidence)
