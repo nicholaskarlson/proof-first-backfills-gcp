@@ -149,6 +149,11 @@ func demo(outDir string) int {
 		outCase := filepath.Join(outDir, c)
 		applyOut := filepath.Join(outCase, "apply")
 
+		localOnly := false
+		if _, err := os.Stat(filepath.Join(inDir, "local_only")); err == nil {
+			localOnly = true
+		}
+
 		if _, err := os.Stat(cfgPath); err == nil {
 			// Render-based fixture: load config, render plan artifacts, then apply.
 			cfg, err := loadConfig(cfgPath)
@@ -183,24 +188,39 @@ func demo(outDir string) int {
 				}
 			}
 		} else if _, err := os.Stat(planPath); err == nil {
-			// Apply-only fixture: exercise apply errors without changing render.
-			if err := apply.ApplyDryRun(planPath, applyOut); err != nil {
-				_ = writeError(applyOut, err.Error())
+			if localOnly {
+				// Local-only fixture: exercise local errors without apply/verify.
+				localOut := filepath.Join(outCase, "local")
+				seedDir := filepath.Join(inDir, "seed")
+				if _, err := os.Stat(seedDir); err == nil {
+					if err := pfutil.CopyTree(seedDir, outCase); err != nil {
+						_ = writeError(localOut, err.Error())
+					} else if err := local.Exec(planPath, localOut); err != nil {
+						_ = writeError(localOut, err.Error())
+					}
+				} else if err := local.Exec(planPath, localOut); err != nil {
+					_ = writeError(localOut, err.Error())
+				}
 			} else {
-				verifyOut := filepath.Join(outCase, "verify")
-				if err := verify.Verify(planPath, applyOut, verifyOut); err != nil {
-					_ = writeError(verifyOut, err.Error())
+				// Apply-only fixture: exercise apply errors without changing render.
+				if err := apply.ApplyDryRun(planPath, applyOut); err != nil {
+					_ = writeError(applyOut, err.Error())
 				} else {
-					localOut := filepath.Join(outCase, "local")
-					seedDir := filepath.Join(inDir, "seed")
-					if _, err := os.Stat(seedDir); err == nil {
-						if err := pfutil.CopyTree(seedDir, outCase); err != nil {
-							_ = writeError(localOut, err.Error())
+					verifyOut := filepath.Join(outCase, "verify")
+					if err := verify.Verify(planPath, applyOut, verifyOut); err != nil {
+						_ = writeError(verifyOut, err.Error())
+					} else {
+						localOut := filepath.Join(outCase, "local")
+						seedDir := filepath.Join(inDir, "seed")
+						if _, err := os.Stat(seedDir); err == nil {
+							if err := pfutil.CopyTree(seedDir, outCase); err != nil {
+								_ = writeError(localOut, err.Error())
+							} else if err := local.Exec(planPath, localOut); err != nil {
+								_ = writeError(localOut, err.Error())
+							}
 						} else if err := local.Exec(planPath, localOut); err != nil {
 							_ = writeError(localOut, err.Error())
 						}
-					} else if err := local.Exec(planPath, localOut); err != nil {
-						_ = writeError(localOut, err.Error())
 					}
 				}
 			}

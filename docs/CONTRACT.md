@@ -81,6 +81,9 @@ Notes:
 - For apply-only fixtures (those that provide `plan_manifest.json` under `fixtures/input/<case>/`),
   demo runs `apply` against that plan to exercise apply expected-fail cases without changing render.
 
+- For local-only fixtures (those that also provide `fixtures/input/<case>/local_only`),
+  demo runs `local` against that plan to exercise local expected-fail behavior without changing apply/verify.
+
 
 ## Config schema (MVP)
 

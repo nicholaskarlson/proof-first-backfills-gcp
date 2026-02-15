@@ -1,0 +1,14 @@
+{
+  "project_id": "demo-project",
+  "region": "us-central1",
+  "input_bucket": "demo-input",
+  "output_bucket": "demo-output",
+  "service_name": "finance-pipeline",
+  "runs": [
+    {
+      "run_id": "demo-0001",
+      "left": "left.csv",
+      "right": "right.csv"
+    }
+  ]
+}
