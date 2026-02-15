@@ -99,6 +99,12 @@ func ApplyDryRun(planPath, outDir string) error {
 		if err := pfutil.ValidateRunID(r.RunID); err != nil {
 			return fmt.Errorf("runs[%d] invalid run_id: %s", i, err.Error())
 		}
+		if err := pfutil.ValidateObjectKey(r.Left); err != nil {
+			return fmt.Errorf("runs[%d] invalid left: %s", i, err.Error())
+		}
+		if err := pfutil.ValidateObjectKey(r.Right); err != nil {
+			return fmt.Errorf("runs[%d] invalid right: %s", i, err.Error())
+		}
 	}
 
 	runs := make([]RunReport, 0, len(plan.Runs))
