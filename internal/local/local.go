@@ -49,6 +49,35 @@ func verifyPlanManifest(planPath, planSha string) error {
 	return nil
 }
 
+func verifyExistingLocalManifest(outDir string) error {
+	mf := filepath.Join(outDir, "manifest.sha256")
+	b, err := os.ReadFile(mf)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+
+	content := strings.ReplaceAll(string(b), "\r\n", "\n")
+	for _, line := range strings.Split(content, "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		parts := strings.SplitN(line, "  ", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		name := strings.TrimSpace(parts[1])
+		if name == "local_diff.json" {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("local manifest.sha256 missing entry: local_diff.json")
+}
+
 type runMeta struct {
 	RunID      string `json:"run_id"`
 	Left       string `json:"left"`
@@ -99,6 +128,9 @@ func Exec(planPath, outDir string) error {
 		return fmt.Errorf("refusing unsafe --out: %q", outDir)
 	}
 	if err := os.MkdirAll(outDir, 0o755); err != nil {
+		return err
+	}
+	if err := verifyExistingLocalManifest(outDir); err != nil {
 		return err
 	}
 

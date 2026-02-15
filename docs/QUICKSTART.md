@@ -102,6 +102,7 @@ cat ./out/bad/error.txt
 - `plan_manifest.json` is the “plan you can diff” before any real apply work exists.
 - `batch_report.json` is the “apply lane witness” (PR2 dry-run), proving that apply can be deterministic too.
 - `local_report.json` + `runs/**` are the “run-folder simulation” artifacts (resumable and deterministic).
+- If `local/manifest.sha256` already exists, it must include `local_diff.json` (diff witness).
 - `manifest.sha256` is the minimal integrity witness for each lane’s primary artifact.
 - `error.txt` is the expected-fail lane (contract violation), and it is the **only** artifact in that lane.
 
