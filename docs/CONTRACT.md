@@ -97,7 +97,7 @@ Required:
 - `output_bucket` (string)
 - `service_name` (string)
 - `runs` (list):
-  - `run_id` (string)
+  - `run_id` (string; must be unique within `runs`)
   - `left` (string)
   - `right` (string)
 
