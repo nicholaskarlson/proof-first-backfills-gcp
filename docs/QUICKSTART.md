@@ -27,6 +27,15 @@ PR2 adds the **apply lane** (dry-run only). The system is still deterministic: n
 - `verify_report.json` — deterministic verify-lane evidence
 - `manifest.sha256` — sha256 over `verify_report.json`
 
+### Local (no cloud, resumable)
+
+`pfbackfill local` writes:
+
+- `local_report.json` — deterministic local execution evidence
+- `manifest.sha256` — sha256 over all files under the local lane
+- `runs/<run_id>/run_meta.json` — per-run metadata
+- `runs/<run_id>/done.json` — resumability marker
+
 ### Expected-fail
 
 If inputs violate the contract, the command writes **only**:
@@ -61,12 +70,19 @@ Then verify the plan + apply artifacts:
 go run ./cmd/pfbackfill verify   --plan ./out/render/plan_manifest.json   --apply ./out/apply   --out ./out/verify
 ```
 
+Then run the local execution lane (no cloud):
+
+```bash
+go run ./cmd/pfbackfill local   --plan ./out/render/plan_manifest.json   --out ./out/local
+```
+
 Expected outputs:
 
 ```bash
 ls -1 ./out/render
 ls -1 ./out/apply
 ls -1 ./out/verify
+ls -1 ./out/local
 ```
 
 Run an expected-fail fixture:
@@ -81,6 +97,7 @@ cat ./out/bad/error.txt
 
 - `plan_manifest.json` is the “plan you can diff” before any real apply work exists.
 - `batch_report.json` is the “apply lane witness” (PR2 dry-run), proving that apply can be deterministic too.
+- `local_report.json` + `runs/**` are the “run-folder simulation” artifacts (resumable and deterministic).
 - `manifest.sha256` is the minimal integrity witness for each lane’s primary artifact.
 - `error.txt` is the expected-fail lane (contract violation), and it is the **only** artifact in that lane.
 

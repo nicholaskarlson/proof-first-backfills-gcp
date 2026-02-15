@@ -1,0 +1,6 @@
+{
+  "run_id": "caseB",
+  "left": "fixtures/demo/left2.csv",
+  "right": "fixtures/demo/right2.csv",
+  "plan_sha256": "b856f35140333d24dcba65d654f64119f42db9a0fbc8f25e25d63918f1d72bfd"
+}

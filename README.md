@@ -23,6 +23,7 @@ Commands:
 - `pfbackfill render` — render deterministic plan evidence
 - `pfbackfill apply` — apply lane (PR2 dry-run) deterministic batch evidence
 - `pfbackfill verify` — verify lane (PR4 offline) deterministic verification evidence
+- `pfbackfill local` — local execution lane (PR5 no cloud) deterministic run-folder simulation
 - `pfbackfill demo` — recompute fixtures and diff goldens
 
 Docs:
