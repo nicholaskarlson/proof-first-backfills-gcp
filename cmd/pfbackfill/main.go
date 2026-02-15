@@ -72,6 +72,14 @@ func (c *Config) Validate() error {
 		if r.Right == "" {
 			return fmt.Errorf("runs[%d] missing required field: right", i)
 		}
+
+		if err := pfutil.ValidateObjectKey(r.Left); err != nil {
+			return fmt.Errorf("runs[%d] invalid left: %s", i, err.Error())
+		}
+		if err := pfutil.ValidateObjectKey(r.Right); err != nil {
+			return fmt.Errorf("runs[%d] invalid right: %s", i, err.Error())
+		}
+
 	}
 	return nil
 }
