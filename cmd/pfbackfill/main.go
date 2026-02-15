@@ -8,11 +8,13 @@ import (
 	"path/filepath"
 	"sort"
 
+	yaml "gopkg.in/yaml.v3"
+
 	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/apply"
+	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/local"
 	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/model"
 	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/pfutil"
 	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/verify"
-	"gopkg.in/yaml.v3"
 )
 
 type Run struct {
@@ -164,6 +166,18 @@ func demo(outDir string) int {
 						verifyOut := filepath.Join(outCase, "verify")
 						if err := verify.Verify(planOut, applyOut, verifyOut); err != nil {
 							_ = writeError(verifyOut, err.Error())
+						} else {
+							localOut := filepath.Join(outCase, "local")
+							seedDir := filepath.Join(inDir, "seed")
+							if _, err := os.Stat(seedDir); err == nil {
+								if err := pfutil.CopyTree(seedDir, outCase); err != nil {
+									_ = writeError(localOut, err.Error())
+								} else if err := local.Exec(planOut, localOut); err != nil {
+									_ = writeError(localOut, err.Error())
+								}
+							} else if err := local.Exec(planOut, localOut); err != nil {
+								_ = writeError(localOut, err.Error())
+							}
 						}
 					}
 				}
@@ -176,6 +190,18 @@ func demo(outDir string) int {
 				verifyOut := filepath.Join(outCase, "verify")
 				if err := verify.Verify(planPath, applyOut, verifyOut); err != nil {
 					_ = writeError(verifyOut, err.Error())
+				} else {
+					localOut := filepath.Join(outCase, "local")
+					seedDir := filepath.Join(inDir, "seed")
+					if _, err := os.Stat(seedDir); err == nil {
+						if err := pfutil.CopyTree(seedDir, outCase); err != nil {
+							_ = writeError(localOut, err.Error())
+						} else if err := local.Exec(planPath, localOut); err != nil {
+							_ = writeError(localOut, err.Error())
+						}
+					} else if err := local.Exec(planPath, localOut); err != nil {
+						_ = writeError(localOut, err.Error())
+					}
 				}
 			}
 		} else {
@@ -194,7 +220,7 @@ func demo(outDir string) int {
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("usage: pfbackfill <render|apply|verify|demo> [args]")
+		fmt.Println("usage: pfbackfill <render|apply|verify|local|demo> [args]")
 		os.Exit(2)
 	}
 
@@ -247,6 +273,19 @@ func main() {
 			os.Exit(1)
 		}
 
+	case "local":
+		fs := flag.NewFlagSet("local", flag.ExitOnError)
+		planPath := fs.String("plan", "", "path to plan_manifest.json")
+		outDir := fs.String("out", "", "lane output directory")
+		_ = fs.Parse(os.Args[2:])
+		if *planPath == "" || *outDir == "" {
+			fmt.Println("local requires --plan and --out")
+			os.Exit(2)
+		}
+		if err := local.Exec(*planPath, *outDir); err != nil {
+			_ = writeError(*outDir, err.Error())
+			os.Exit(1)
+		}
 	case "demo":
 		fs := flag.NewFlagSet("demo", flag.ExitOnError)
 		outDir := fs.String("out", "", "output directory (cleared)")

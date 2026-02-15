@@ -4,6 +4,7 @@
 
 - **Render lane:** deterministic plan artifacts you can review/diff.
 - **Apply lane:** deterministic batch evidence (PR2 is **dry-run only**).
+- **Local lane:** deterministic local run-folder simulation (PR5: resumable, no cloud).
 
 ## Commands
 
@@ -46,6 +47,21 @@ On success, `--out` contains:
 On failure, `--out` contains **only**:
 - `error.txt` (with trailing newline)
 
+### Local (PR5: local execution lane, no cloud)
+
+```bash
+pfbackfill local --plan ./out/render/plan_manifest.json --out ./out/local
+```
+
+On success, `--out` contains:
+- `local_report.json` (deterministic local execution evidence)
+- `manifest.sha256` (sha256 over **all** files under `--out`, excluding `manifest.sha256` itself)
+- `runs/<run_id>/run_meta.json` (per-run deterministic metadata)
+- `runs/<run_id>/done.json` (resumability marker; if present, the run is skipped)
+
+On failure, `--out` contains **only**:
+- `error.txt` (with trailing newline)
+
 ### Demo (proof gate)
 
 ```bash
@@ -57,6 +73,8 @@ Recomputes every fixture case and byte-compares to `fixtures/expected/**`.
 Notes:
 - `demo --out` is cleared at the start of the run (no dependence on prior output).
 - For successful render fixtures, apply-lane artifacts are written under `out/<case>/apply/`.
+- For successful verify fixtures, local-lane artifacts are written under `out/<case>/local/`.
+- If a fixture provides `fixtures/input/<case>/seed/**`, demo copies it into `out/<case>/` before running the local lane.
 - For apply-only fixtures (those that provide `plan_manifest.json` under `fixtures/input/<case>/`),
   demo runs `apply` against that plan to exercise apply expected-fail cases without changing render.
 
@@ -76,6 +94,7 @@ Required:
 
 ## Safety
 
-Any command that writes `--out`:
-- clears the directory first
+Commands that write `--out`:
+- `render`, `apply`, `verify`, and `demo` clear the directory first
+- `local` is **resumable** and does not clear `--out` (it only creates missing run folders)
 - refuses unsafe paths (`.`, `..`, `/`, volume roots)

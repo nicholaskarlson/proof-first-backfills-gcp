@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -122,4 +123,54 @@ func WriteShaManifest(outDir string, filenames []string) error {
 		fmt.Fprintf(&b, "%s  %s\n", sum, fn)
 	}
 	return WriteText(filepath.Join(outDir, "manifest.sha256"), b.String())
+}
+
+// CopyTree copies a directory tree from srcDir into dstDir.
+// Paths are walked and copied in sorted order for determinism.
+// File permissions are normalized (dirs: 0755, files: 0644).
+func CopyTree(srcDir, dstDir string) error {
+	srcDir = filepath.Clean(srcDir)
+	dstDir = filepath.Clean(dstDir)
+
+	var relFiles []string
+	walkErr := filepath.WalkDir(srcDir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() {
+			return nil
+		}
+		rel, err := filepath.Rel(srcDir, path)
+		if err != nil {
+			return err
+		}
+		relFiles = append(relFiles, rel)
+		return nil
+	})
+	if walkErr != nil {
+		return walkErr
+	}
+
+	sort.Strings(relFiles)
+	for _, rel := range relFiles {
+		srcPath := filepath.Join(srcDir, rel)
+		dstPath := filepath.Join(dstDir, rel)
+
+		if err := os.MkdirAll(filepath.Dir(dstPath), 0o755); err != nil {
+			return err
+		}
+		b, err := os.ReadFile(srcPath)
+		if err != nil {
+			return err
+		}
+
+		tmp := dstPath + ".tmp"
+		if err := os.WriteFile(tmp, b, 0o644); err != nil {
+			return err
+		}
+		if err := os.Rename(tmp, dstPath); err != nil {
+			return err
+		}
+	}
+	return nil
 }
