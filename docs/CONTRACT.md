@@ -100,6 +100,9 @@ Required:
   - `run_id` (string; must be unique within `runs`)
   - `left` (string)
   - `right` (string)
+Notes:
+- Unknown fields in `config.yaml` are rejected (strict decode).
+
 
 ## Safety
 
