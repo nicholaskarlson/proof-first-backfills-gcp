@@ -59,6 +59,7 @@ Notes:
 
 On success, `--out` contains:
 - `local_report.json` (deterministic local execution evidence)
+- `local_diff.json` (deterministic per-run create/skip witness for drift explanations)
 - `manifest.sha256` (sha256 over **all** files under `--out`, excluding `manifest.sha256` itself)
 - `runs/<run_id>/run_meta.json` (per-run deterministic metadata)
 - `runs/<run_id>/done.json` (resumability marker; if present, the run is skipped)

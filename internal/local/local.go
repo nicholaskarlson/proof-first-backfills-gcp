@@ -67,6 +67,22 @@ type runReport struct {
 	Action string `json:"action"`
 }
 
+type localDiff struct {
+	Mode       string    `json:"mode"`
+	PlanSHA256 string    `json:"plan_sha256"`
+	RunCount   int       `json:"run_count"`
+	Created    int       `json:"created"`
+	Skipped    int       `json:"skipped"`
+	Runs       []runDiff `json:"runs"`
+}
+
+type runDiff struct {
+	RunID           string   `json:"run_id"`
+	Action          string   `json:"action"`
+	PreexistingDone bool     `json:"preexisting_done"`
+	PathsWouldWrite []string `json:"paths_would_write"`
+}
+
 type localReport struct {
 	Mode       string      `json:"mode"`
 	PlanSHA256 string      `json:"plan_sha256"`
@@ -109,6 +125,7 @@ func Exec(planPath, outDir string) error {
 	created := 0
 	skipped := 0
 	rr := make([]runReport, 0, len(runs))
+	rd := make([]runDiff, 0, len(runs))
 
 	for _, r := range runs {
 		runDir := filepath.Join(outDir, "runs", r.RunID)
@@ -133,6 +150,7 @@ func Exec(planPath, outDir string) error {
 
 			skipped++
 			rr = append(rr, runReport{RunID: r.RunID, Action: "SKIPPED"})
+			rd = append(rd, runDiff{RunID: r.RunID, Action: "SKIPPED", PreexistingDone: true, PathsWouldWrite: []string{filepath.ToSlash(filepath.Join("runs", r.RunID, "run_meta.json")), filepath.ToSlash(filepath.Join("runs", r.RunID, "done.json"))}})
 			continue
 		} else if err != nil && !os.IsNotExist(err) {
 			return err
@@ -168,6 +186,23 @@ func Exec(planPath, outDir string) error {
 
 		created++
 		rr = append(rr, runReport{RunID: r.RunID, Action: "CREATED"})
+		rd = append(rd, runDiff{RunID: r.RunID, Action: "CREATED", PreexistingDone: false, PathsWouldWrite: []string{filepath.ToSlash(filepath.Join("runs", r.RunID, "run_meta.json")), filepath.ToSlash(filepath.Join("runs", r.RunID, "done.json"))}})
+	}
+
+	diff := localDiff{
+		Mode:       "local",
+		PlanSHA256: planSha,
+		RunCount:   len(runs),
+		Created:    created,
+		Skipped:    skipped,
+		Runs:       rd,
+	}
+	db, err := json.MarshalIndent(diff, "", "  ")
+	if err != nil {
+		return err
+	}
+	if err := pfutil.WriteText(filepath.Join(outDir, "local_diff.json"), string(db)+"\n"); err != nil {
+		return err
 	}
 
 	report := localReport{
