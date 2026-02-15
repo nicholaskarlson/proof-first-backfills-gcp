@@ -41,6 +41,13 @@ pfbackfill demo --out ./out/demo
 
 Recomputes every fixture case and byte-compares to `fixtures/expected/**`.
 
+Notes:
+- `demo --out` is cleared at the start of the run (no dependence on prior output).
+- For successful render fixtures, apply-lane artifacts are written under `out/<case>/apply/`.
+- For apply-only fixtures (those that provide `plan_manifest.json` under `fixtures/input/<case>/`),
+  demo runs `apply` against that plan to exercise apply expected-fail cases without changing render.
+
+
 ## Config schema (MVP)
 
 Required:
