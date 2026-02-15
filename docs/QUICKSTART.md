@@ -1,8 +1,8 @@
-# Quick Start (PR6)
+# Quick Start
 
 This is the smallest “reader path” through the repo.
 
-PR5 adds the **local lane** (run-folder simulation). PR6 tightens safety + requires a plan witness. The system is still deterministic: no network calls, no timestamps, no non-determinism.
+This repo includes the **local lane** (run-folder simulation) plus safety guards (plan witness, safe path segments, strict config decode). The system is deterministic: no network calls, no timestamps, no non-determinism.
 
 ## Contract
 
@@ -46,6 +46,12 @@ Notes:
 If inputs violate the contract, the command writes **only**:
 
 - `error.txt` — stable error message + trailing newline
+
+Common expected-fail cases in this repo include:
+- unsafe `run_id` (path traversal)
+- duplicate `run_id`
+- unknown `config.yaml` fields (strict decode)
+- unsafe object keys for `left` / `right`
 
 ## Command block
 
@@ -103,7 +109,7 @@ cat ./out/bad/error.txt
 ## Artifact review
 
 - `plan_manifest.json` is the “plan you can diff” before any real apply work exists.
-- `batch_report.json` is the “apply lane witness” (PR2 dry-run), proving that apply can be deterministic too.
+- `batch_report.json` is the “apply lane witness” (dry-run), proving that apply can be deterministic too.
 - `local_report.json` + `runs/**` are the “run-folder simulation” artifacts (resumable and deterministic).
 - If `local/manifest.sha256` already exists, it must include `local_diff.json` (diff witness).
 - `manifest.sha256` is the minimal integrity witness for each lane’s primary artifact.
