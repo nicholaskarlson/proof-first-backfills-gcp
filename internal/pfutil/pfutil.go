@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -182,6 +183,49 @@ func CopyTree(srcDir, dstDir string) error {
 		if err := os.Rename(tmp, dstPath); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+// ValidateObjectKey enforces a safe, deterministic object-key style path (POSIX-like).
+// We allow forward-slash-separated relative paths (e.g., fixtures/demo/left.csv), but forbid:
+// - absolute paths (/x)
+// - Windows drive paths (C:/x)
+// - backslashes
+// - empty segments, "." segments, or ".." traversal
+// - non-canonical forms (e.g., repeated slashes, trailing slash)
+func ValidateObjectKey(k string) error {
+	k = strings.TrimSpace(k)
+	if k == "" {
+		return fmt.Errorf("empty")
+	}
+	if strings.Contains(k, "\\") {
+		return fmt.Errorf("must use forward slashes (/) only")
+	}
+	if strings.HasPrefix(k, "/") {
+		return fmt.Errorf("must be a relative path (no leading '/')")
+	}
+	if len(k) >= 2 {
+		c0 := k[0]
+		if ((c0 >= 'A' && c0 <= 'Z') || (c0 >= 'a' && c0 <= 'z')) && k[1] == ':' {
+			return fmt.Errorf("must not be a Windows drive path")
+		}
+	}
+	if strings.HasPrefix(k, "~") {
+		return fmt.Errorf("must not start with '~'")
+	}
+	parts := strings.Split(k, "/")
+	for _, p := range parts {
+		if p == "" {
+			return fmt.Errorf("must not contain empty path segments")
+		}
+		if p == "." || p == ".." {
+			return fmt.Errorf("must not contain '.' or '..' segments")
+		}
+	}
+	clean := path.Clean(k)
+	if clean != k {
+		return fmt.Errorf("must be clean (no repeated slashes, trailing slash, or dot segments)")
 	}
 	return nil
 }

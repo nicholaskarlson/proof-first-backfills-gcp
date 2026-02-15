@@ -63,6 +63,8 @@ Render the demo fixture:
 go run ./cmd/pfbackfill render   --config ./fixtures/input/demo/config.yaml   --out ./out/render
 ```
 
+Note: `left` and `right` in `config.yaml` are object-key style paths (relative, forward slashes, no `.`/`..` segments).
+
 Then apply the rendered plan (dry-run):
 
 ```bash
