@@ -95,6 +95,12 @@ func ApplyDryRun(planPath, outDir string) error {
 	}
 
 	// Deterministic: ensure runs are sorted by run_id even if the input plan wasn't.
+	for i, r := range plan.Runs {
+		if err := pfutil.ValidateRunID(r.RunID); err != nil {
+			return fmt.Errorf("runs[%d] invalid run_id: %s", i, err.Error())
+		}
+	}
+
 	runs := make([]RunReport, 0, len(plan.Runs))
 	for _, r := range plan.Runs {
 		runs = append(runs, RunReport{
