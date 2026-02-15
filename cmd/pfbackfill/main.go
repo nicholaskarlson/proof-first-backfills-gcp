@@ -11,6 +11,7 @@ import (
 	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/apply"
 	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/model"
 	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/pfutil"
+	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/verify"
 	"gopkg.in/yaml.v3"
 )
 
@@ -159,6 +160,11 @@ func demo(outDir string) int {
 					planOut := filepath.Join(outCase, "plan_manifest.json")
 					if err := apply.ApplyDryRun(planOut, applyOut); err != nil {
 						_ = writeError(applyOut, err.Error())
+					} else {
+						verifyOut := filepath.Join(outCase, "verify")
+						if err := verify.Verify(planOut, applyOut, verifyOut); err != nil {
+							_ = writeError(verifyOut, err.Error())
+						}
 					}
 				}
 			}
@@ -166,6 +172,11 @@ func demo(outDir string) int {
 			// Apply-only fixture: exercise apply errors without changing render.
 			if err := apply.ApplyDryRun(planPath, applyOut); err != nil {
 				_ = writeError(applyOut, err.Error())
+			} else {
+				verifyOut := filepath.Join(outCase, "verify")
+				if err := verify.Verify(planPath, applyOut, verifyOut); err != nil {
+					_ = writeError(verifyOut, err.Error())
+				}
 			}
 		} else {
 			_ = writeError(outCase, "missing fixture: config.yaml or plan_manifest.json")
@@ -183,7 +194,7 @@ func demo(outDir string) int {
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("usage: pfbackfill <render|apply|demo> [args]")
+		fmt.Println("usage: pfbackfill <render|apply|verify|demo> [args]")
 		os.Exit(2)
 	}
 
@@ -217,6 +228,21 @@ func main() {
 			os.Exit(2)
 		}
 		if err := apply.ApplyDryRun(*planPath, *outDir); err != nil {
+			_ = writeError(*outDir, err.Error())
+			os.Exit(1)
+		}
+
+	case "verify":
+		fs := flag.NewFlagSet("verify", flag.ExitOnError)
+		planPath := fs.String("plan", "", "path to plan_manifest.json (must have sibling manifest.sha256)")
+		applyDir := fs.String("apply", "", "apply output directory (must contain batch_report.json + manifest.sha256)")
+		outDir := fs.String("out", "", "output directory (cleared)")
+		_ = fs.Parse(os.Args[2:])
+		if *planPath == "" || *applyDir == "" || *outDir == "" {
+			fmt.Println("verify requires --plan, --apply, and --out")
+			os.Exit(2)
+		}
+		if err := verify.Verify(*planPath, *applyDir, *outDir); err != nil {
 			_ = writeError(*outDir, err.Error())
 			os.Exit(1)
 		}

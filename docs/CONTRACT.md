@@ -33,6 +33,19 @@ On success, `--out` contains:
 On failure, `--out` contains **only**:
 - `error.txt` (with trailing newline)
 
+### Verify (PR4: offline)
+
+```bash
+pfbackfill verify --plan ./out/render/plan_manifest.json --apply ./out/apply --out ./out/verify
+```
+
+On success, `--out` contains:
+- `verify_report.json` (deterministic verify-lane evidence)
+- `manifest.sha256` (sha256 over `verify_report.json`)
+
+On failure, `--out` contains **only**:
+- `error.txt` (with trailing newline)
+
 ### Demo (proof gate)
 
 ```bash
