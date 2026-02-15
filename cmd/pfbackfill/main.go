@@ -116,6 +116,13 @@ func render(cfg *Config, outDir string) error {
 }
 
 func demo(outDir string) int {
+	// Demo is part of the proof gate: it must be deterministic and must not depend
+	// on prior runs. We clear the demo outDir up front.
+	if err := pfutil.ResetOutDir(outDir); err != nil {
+		fmt.Println(err.Error())
+		return 1
+	}
+
 	casesDir := "fixtures/input"
 	entries, err := os.ReadDir(casesDir)
 	if err != nil {
@@ -133,22 +140,35 @@ func demo(outDir string) int {
 	for _, c := range cases {
 		inDir := filepath.Join(casesDir, c)
 		expDir := filepath.Join("fixtures/expected", c)
-		cfgPath := filepath.Join(inDir, "config.yaml")
-		outCase := filepath.Join(outDir, c)
 
-		cfg, err := loadConfig(cfgPath)
-		if err != nil {
-			_ = writeError(outCase, err.Error())
-		} else {
-			if err := render(cfg, outCase); err != nil {
+		cfgPath := filepath.Join(inDir, "config.yaml")
+		planPath := filepath.Join(inDir, "plan_manifest.json")
+		outCase := filepath.Join(outDir, c)
+		applyOut := filepath.Join(outCase, "apply")
+
+		if _, err := os.Stat(cfgPath); err == nil {
+			// Render-based fixture: load config, render plan artifacts, then apply.
+			cfg, err := loadConfig(cfgPath)
+			if err != nil {
 				_ = writeError(outCase, err.Error())
 			} else {
-				planPath := filepath.Join(outCase, "plan_manifest.json")
-				applyOut := filepath.Join(outCase, "apply")
-				if err := apply.ApplyDryRun(planPath, applyOut); err != nil {
+				if err := render(cfg, outCase); err != nil {
 					_ = writeError(outCase, err.Error())
+				} else {
+					// Lane purity: apply failures live in the apply lane folder.
+					planOut := filepath.Join(outCase, "plan_manifest.json")
+					if err := apply.ApplyDryRun(planOut, applyOut); err != nil {
+						_ = writeError(applyOut, err.Error())
+					}
 				}
 			}
+		} else if _, err := os.Stat(planPath); err == nil {
+			// Apply-only fixture: exercise apply errors without changing render.
+			if err := apply.ApplyDryRun(planPath, applyOut); err != nil {
+				_ = writeError(applyOut, err.Error())
+			}
+		} else {
+			_ = writeError(outCase, "missing fixture: config.yaml or plan_manifest.json")
 		}
 
 		if err := pfutil.DiffTrees(outCase, expDir); err != nil {
