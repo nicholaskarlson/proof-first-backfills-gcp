@@ -3,8 +3,8 @@
 `pfbackfill` is built in lanes.
 
 - **Render lane:** deterministic plan artifacts you can review/diff.
-- **Apply lane:** deterministic batch evidence (PR2 is **dry-run only**).
-- **Local lane:** deterministic local run-folder simulation (PR5: resumable, no cloud).
+- **Apply lane:** deterministic batch evidence (currently **dry-run only**).
+- **Local lane:** deterministic local run-folder simulation (resumable, no cloud).
 
 ## Commands
 
@@ -21,7 +21,7 @@ On success, `--out` contains:
 On failure, `--out` contains **only**:
 - `error.txt` (with trailing newline)
 
-### Apply (PR2: dry-run)
+### Apply (dry-run)
 
 ```bash
 pfbackfill apply --plan ./out/render/plan_manifest.json --out ./out/apply
@@ -34,7 +34,7 @@ On success, `--out` contains:
 On failure, `--out` contains **only**:
 - `error.txt` (with trailing newline)
 
-### Verify (PR4: offline)
+### Verify (offline)
 
 ```bash
 pfbackfill verify --plan ./out/render/plan_manifest.json --apply ./out/apply --out ./out/verify
@@ -47,7 +47,7 @@ On success, `--out` contains:
 On failure, `--out` contains **only**:
 - `error.txt` (with trailing newline)
 
-### Local (PR6: local execution lane, no cloud)
+### Local (execution lane, no cloud)
 
 ```bash
 pfbackfill local --plan ./out/render/plan_manifest.json --out ./out/local
@@ -57,6 +57,10 @@ Notes:
 - `local` requires a sibling `manifest.sha256` next to `plan_manifest.json` (the plan witness).
 - If `runs/<run_id>/done.json` exists, it must match the plan witness (`plan_sha256`) or the local lane fails.
 - `run_id` must be a safe path segment: it must match `^[A-Za-z0-9][A-Za-z0-9_-]*$`.
+
+Safety notes:
+- `run_id` and object keys (e.g., `left` / `right`) are validated as safe path segments.
+- Config decoding is strict: unknown `config.yaml` fields are rejected.
 
 On success, `--out` contains:
 - `local_report.json` (deterministic local execution evidence)
