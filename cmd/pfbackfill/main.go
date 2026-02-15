@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	yaml "gopkg.in/yaml.v3"
 
@@ -80,9 +82,44 @@ func loadConfig(path string) (*Config, error) {
 		return nil, err
 	}
 	var c Config
-	if err := yaml.Unmarshal(b, &c); err != nil {
-		return nil, fmt.Errorf("invalid yaml: %s", err.Error())
+
+	dec := yaml.NewDecoder(bytes.NewReader(b))
+	dec.KnownFields(true)
+	if err := dec.Decode(&c); err != nil {
+		msg := err.Error()
+		// Prefer a stable one-liner for unknown-field failures.
+		// yaml.v3 typically emits: yaml: unmarshal errors (line N: field X not found in type ...)
+		if strings.Contains(msg, "field ") && strings.Contains(msg, "not found in type") {
+			var line, field string
+			if i := strings.Index(msg, "line "); i != -1 {
+				rest := msg[i+len("line "):]
+				j := 0
+				for j < len(rest) && rest[j] >= '0' && rest[j] <= '9' {
+					j++
+				}
+				if j > 0 {
+					line = rest[:j]
+				}
+			}
+			if i := strings.Index(msg, "field "); i != -1 {
+				rest := msg[i+len("field "):]
+				j := strings.IndexAny(rest, " \t\r\n")
+				if j == -1 {
+					field = rest
+				} else {
+					field = rest[:j]
+				}
+			}
+			if field != "" {
+				if line != "" {
+					return nil, fmt.Errorf("invalid yaml: unknown field %s (line %s)", field, line)
+				}
+				return nil, fmt.Errorf("invalid yaml: unknown field %s", field)
+			}
+		}
+		return nil, fmt.Errorf("invalid yaml: %s", msg)
 	}
+
 	if err := c.Validate(); err != nil {
 		return nil, err
 	}
