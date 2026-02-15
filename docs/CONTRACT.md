@@ -105,4 +105,5 @@ Required:
 Commands that write `--out`:
 - `render`, `apply`, `verify`, and `demo` clear the directory first
 - `local` is **resumable** and does not clear `--out` (it only creates missing run folders)
+- If `local/manifest.sha256` already exists (resume), it must include an entry for `local_diff.json` (diff witness). Missing entry is a deterministic hard error.
 - refuses unsafe paths (`.`, `..`, `/`, volume roots)
