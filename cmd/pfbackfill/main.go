@@ -51,6 +51,8 @@ func (c *Config) Validate() error {
 	if len(c.Runs) == 0 {
 		return fmt.Errorf("missing required field: runs")
 	}
+
+	seen := map[string]int{}
 	for i, r := range c.Runs {
 		if r.RunID == "" {
 			return fmt.Errorf("runs[%d] missing required field: run_id", i)
@@ -58,6 +60,10 @@ func (c *Config) Validate() error {
 		if err := pfutil.ValidateRunID(r.RunID); err != nil {
 			return fmt.Errorf("runs[%d] invalid run_id: %s", i, err.Error())
 		}
+		if prev, ok := seen[r.RunID]; ok {
+			return fmt.Errorf("runs[%d] duplicate run_id: %s (already in runs[%d])", i, r.RunID, prev)
+		}
+		seen[r.RunID] = i
 		if r.Left == "" {
 			return fmt.Errorf("runs[%d] missing required field: left", i)
 		}

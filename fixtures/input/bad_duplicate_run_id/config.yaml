@@ -1,0 +1,12 @@
+project_id: demo
+region: us-central1
+input_bucket: in
+output_bucket: out
+service_name: pfbackfill
+runs:
+  - run_id: caseA
+    left: left.csv
+    right: right.csv
+  - run_id: caseA
+    left: left2.csv
+    right: right2.csv
