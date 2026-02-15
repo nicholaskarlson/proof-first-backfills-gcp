@@ -8,10 +8,46 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/model"
 	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/pfutil"
 )
+
+func verifyPlanManifest(planPath, planSha string) error {
+	planDir := filepath.Dir(planPath)
+	shaPath := filepath.Join(planDir, "manifest.sha256")
+
+	b, err := os.ReadFile(shaPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return fmt.Errorf("missing plan manifest.sha256")
+		}
+		return err
+	}
+
+	wantFile := filepath.Base(planPath)
+	lines := strings.Split(strings.TrimSpace(string(b)), "\n")
+	found := false
+	for _, line := range lines {
+		parts := strings.SplitN(line, "  ", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		if parts[1] != wantFile {
+			continue
+		}
+		found = true
+		if parts[0] != planSha {
+			return fmt.Errorf("plan manifest sha mismatch")
+		}
+	}
+	if !found {
+		return fmt.Errorf("plan manifest.sha256 missing entry: %s", wantFile)
+	}
+
+	return nil
+}
 
 type runMeta struct {
 	RunID      string `json:"run_id"`
@@ -44,7 +80,7 @@ type localReport struct {
 // It is resumable: if a run already has runs/<run_id>/done.json, it is skipped and left untouched.
 func Exec(planPath, outDir string) error {
 	if pfutil.IsUnsafeOutDir(outDir) {
-		return fmt.Errorf("unsafe out dir: %s", outDir)
+		return fmt.Errorf("refusing unsafe --out: %q", outDir)
 	}
 	if err := os.MkdirAll(outDir, 0o755); err != nil {
 		return err
@@ -56,6 +92,9 @@ func Exec(planPath, outDir string) error {
 	}
 	sum := sha256.Sum256(planBytes)
 	planSha := hex.EncodeToString(sum[:])
+	if err := verifyPlanManifest(planPath, planSha); err != nil {
+		return err
+	}
 
 	var plan model.PlanManifest
 	if err := json.Unmarshal(planBytes, &plan); err != nil {

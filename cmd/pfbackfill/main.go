@@ -275,8 +275,8 @@ func main() {
 
 	case "local":
 		fs := flag.NewFlagSet("local", flag.ExitOnError)
-		planPath := fs.String("plan", "", "path to plan_manifest.json")
-		outDir := fs.String("out", "", "lane output directory")
+		planPath := fs.String("plan", "", "path to plan_manifest.json (must have sibling manifest.sha256)")
+		outDir := fs.String("out", "", "lane output directory (not cleared; resumable)")
 		_ = fs.Parse(os.Args[2:])
 		if *planPath == "" || *outDir == "" {
 			fmt.Println("local requires --plan and --out")
