@@ -131,7 +131,10 @@ func Verify(planPath, applyDir, outDir string) error {
 	}
 
 	planRuns := make(map[string]model.PlanRun, len(plan.Runs))
-	for _, r := range plan.Runs {
+	for i, r := range plan.Runs {
+		if err := pfutil.ValidateRunID(r.RunID); err != nil {
+			return fmt.Errorf("runs[%d] invalid run_id: %s", i, err.Error())
+		}
 		planRuns[r.RunID] = r
 	}
 

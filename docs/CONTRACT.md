@@ -56,6 +56,7 @@ pfbackfill local --plan ./out/render/plan_manifest.json --out ./out/local
 Notes:
 - `local` requires a sibling `manifest.sha256` next to `plan_manifest.json` (the plan witness).
 - If `runs/<run_id>/done.json` exists, it must match the plan witness (`plan_sha256`) or the local lane fails.
+- `run_id` must be a safe path segment: it must match `^[A-Za-z0-9][A-Za-z0-9_-]*$`.
 
 On success, `--out` contains:
 - `local_report.json` (deterministic local execution evidence)

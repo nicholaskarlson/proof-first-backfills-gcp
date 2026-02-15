@@ -154,6 +154,12 @@ func Exec(planPath, outDir string) error {
 	runs = append(runs, plan.Runs...)
 	sort.Slice(runs, func(i, j int) bool { return runs[i].RunID < runs[j].RunID })
 
+	for i, r := range runs {
+		if err := pfutil.ValidateRunID(r.RunID); err != nil {
+			return fmt.Errorf("runs[%d] invalid run_id: %s", i, err.Error())
+		}
+	}
+
 	created := 0
 	skipped := 0
 	rr := make([]runReport, 0, len(runs))

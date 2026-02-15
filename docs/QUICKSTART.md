@@ -37,6 +37,7 @@ PR5 adds the **local lane** (run-folder simulation). PR6 tightens safety + requi
 - `runs/<run_id>/done.json` — resumability marker
 
 Notes:
+- `run_id` must match `^[A-Za-z0-9][A-Za-z0-9_-]*$`.
 - `local` does **not** clear `--out`; existing `done.json` files are left untouched.
 - `local` requires a sibling `manifest.sha256` next to `plan_manifest.json` (the plan witness).
 

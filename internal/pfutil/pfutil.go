@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"sort"
 	"strings"
@@ -128,6 +129,16 @@ func WriteShaManifest(outDir string, filenames []string) error {
 // CopyTree copies a directory tree from srcDir into dstDir.
 // Paths are walked and copied in sorted order for determinism.
 // File permissions are normalized (dirs: 0755, files: 0644).
+
+var runIDRe = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9_-]*$`)
+
+func ValidateRunID(id string) error {
+	if runIDRe.MatchString(id) {
+		return nil
+	}
+	return fmt.Errorf("must match %s", runIDRe.String())
+}
+
 func CopyTree(srcDir, dstDir string) error {
 	srcDir = filepath.Clean(srcDir)
 	dstDir = filepath.Clean(dstDir)

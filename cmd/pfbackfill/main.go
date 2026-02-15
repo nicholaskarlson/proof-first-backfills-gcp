@@ -55,6 +55,9 @@ func (c *Config) Validate() error {
 		if r.RunID == "" {
 			return fmt.Errorf("runs[%d] missing required field: run_id", i)
 		}
+		if err := pfutil.ValidateRunID(r.RunID); err != nil {
+			return fmt.Errorf("runs[%d] invalid run_id: %s", i, err.Error())
+		}
 		if r.Left == "" {
 			return fmt.Errorf("runs[%d] missing required field: left", i)
 		}
