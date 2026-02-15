@@ -1,4 +1,4 @@
-# Quick Start (PR2)
+# Quick Start (PR4)
 
 This is the smallest “reader path” through the repo.
 
@@ -19,6 +19,13 @@ PR2 adds the **apply lane** (dry-run only). The system is still deterministic: n
 
 - `batch_report.json` — deterministic apply-lane evidence
 - `manifest.sha256` — sha256 over `batch_report.json`
+
+### Verify (offline)
+
+`pfbackfill verify` writes:
+
+- `verify_report.json` — deterministic verify-lane evidence
+- `manifest.sha256` — sha256 over `verify_report.json`
 
 ### Expected-fail
 
@@ -48,11 +55,18 @@ Then apply the rendered plan (dry-run):
 go run ./cmd/pfbackfill apply   --plan ./out/render/plan_manifest.json   --out ./out/apply
 ```
 
+Then verify the plan + apply artifacts:
+
+```bash
+go run ./cmd/pfbackfill verify   --plan ./out/render/plan_manifest.json   --apply ./out/apply   --out ./out/verify
+```
+
 Expected outputs:
 
 ```bash
 ls -1 ./out/render
 ls -1 ./out/apply
+ls -1 ./out/verify
 ```
 
 Run an expected-fail fixture:
