@@ -1,0 +1,23 @@
+{
+  "mode": "dry_run",
+  "plan_sha256": "b856f35140333d24dcba65d654f64119f42db9a0fbc8f25e25d63918f1d72bfd",
+  "project_id": "demo-proj",
+  "region": "us-central1",
+  "service_name": "pf-drop",
+  "input_bucket": "demo-input-bucket",
+  "output_bucket": "demo-output-bucket-v2",
+  "runs": [
+    {
+      "run_id": "caseA",
+      "left": "fixtures/demo/left.csv",
+      "right": "fixtures/demo/right.csv",
+      "status": "DRY_RUN"
+    },
+    {
+      "run_id": "caseB",
+      "left": "fixtures/demo/left2.csv",
+      "right": "fixtures/demo/right2.csv",
+      "status": "DRY_RUN"
+    }
+  ]
+}
