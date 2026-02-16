@@ -1,11 +1,47 @@
 package pfutil
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/model"
 )
+
+// UnmarshalPlanManifestStrict parses plan_manifest.json with DisallowUnknownFields.
+//
+// Why: defense-in-depth. If someone hand-edits a plan, we want to fail fast on
+// extra/typo fields rather than silently ignoring them.
+//
+// NOTE: Error messages are part of the deterministic contract and may be used by fixtures.
+func UnmarshalPlanManifestStrict(raw []byte, out *model.PlanManifest) error {
+	dec := json.NewDecoder(bytes.NewReader(raw))
+	dec.DisallowUnknownFields()
+
+	if err := dec.Decode(out); err != nil {
+		return normalizePlanManifestDecodeErr(err)
+	}
+	// Ensure there is no trailing JSON (defense-in-depth).
+	if err := dec.Decode(&struct{}{}); err != io.EOF {
+		if err == nil {
+			return fmt.Errorf("trailing data after plan_manifest.json")
+		}
+		return err
+	}
+	return nil
+}
+
+func normalizePlanManifestDecodeErr(err error) error {
+	const prefix = "json: unknown field "
+	msg := err.Error()
+	if strings.HasPrefix(msg, prefix) {
+		field := strings.Trim(msg[len(prefix):], "\"")
+		return fmt.Errorf("unknown field in plan_manifest.json: %s", field)
+	}
+	return err
+}
 
 // ValidatePlanManifest enforces defense-in-depth checks on a rendered plan_manifest.json.
 // It is used by plan consumers (apply/verify/local) to fail fast on hand-edited or malformed plans.

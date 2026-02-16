@@ -145,7 +145,7 @@ func Exec(planPath, outDir string) error {
 	}
 
 	var plan model.PlanManifest
-	if err := json.Unmarshal(planBytes, &plan); err != nil {
+	if err := pfutil.UnmarshalPlanManifestStrict(planBytes, &plan); err != nil {
 		return fmt.Errorf("invalid plan_manifest.json: %w", err)
 	}
 	if err := pfutil.ValidatePlanManifest(&plan); err != nil {

@@ -1,0 +1,15 @@
+{
+  "project_id": "demo-project",
+  "region": "us-central1",
+  "input_bucket": "in",
+  "output_bucket": "out",
+  "service_name": "pfbackfill",
+  "runs": [
+    {
+      "run_id": "caseA",
+      "left": "left.csv",
+      "right": "right.csv"
+    }
+  ],
+  "typo_field": "oops"
+}

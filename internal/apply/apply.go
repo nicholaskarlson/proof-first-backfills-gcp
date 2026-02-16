@@ -90,7 +90,7 @@ func ApplyDryRun(planPath, outDir string) error {
 	}
 
 	var plan model.PlanManifest
-	if err := json.Unmarshal(raw, &plan); err != nil {
+	if err := pfutil.UnmarshalPlanManifestStrict(raw, &plan); err != nil {
 		return fmt.Errorf("invalid plan json: %s", err.Error())
 	}
 	if err := pfutil.ValidatePlanManifest(&plan); err != nil {
