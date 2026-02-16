@@ -1,0 +1,27 @@
+{
+  "mode": "local",
+  "plan_sha256": "b856f35140333d24dcba65d654f64119f42db9a0fbc8f25e25d63918f1d72bfd",
+  "run_count": 2,
+  "created": 2,
+  "skipped": 0,
+  "runs": [
+    {
+      "run_id": "caseA",
+      "action": "CREATED",
+      "preexisting_done": false,
+      "paths_would_write": [
+        "runs/caseA/run_meta.json",
+        "runs/caseA/done.json"
+      ]
+    },
+    {
+      "run_id": "caseB",
+      "action": "CREATED",
+      "preexisting_done": false,
+      "paths_would_write": [
+        "runs/caseB/run_meta.json",
+        "runs/caseB/done.json"
+      ]
+    }
+  ]
+}
