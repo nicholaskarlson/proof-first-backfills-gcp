@@ -111,6 +111,9 @@ func Verify(planPath, applyDir, outDir string) error {
 	if err := json.Unmarshal(rawPlan, &plan); err != nil {
 		return fmt.Errorf("invalid plan json: %s", err.Error())
 	}
+	if len(plan.Runs) == 0 {
+		return fmt.Errorf("runs[] must not be empty")
+	}
 
 	rawBatch, err := os.ReadFile(batchPath)
 	if err != nil {
