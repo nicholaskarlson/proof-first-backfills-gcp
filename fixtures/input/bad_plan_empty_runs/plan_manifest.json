@@ -1,0 +1,8 @@
+{
+  "project_id": "proj-demo",
+  "region": "us-central1",
+  "input_bucket": "pfbackfill-input-demo",
+  "output_bucket": "pfbackfill-output-demo",
+  "service_name": "pfbackfill-svc",
+  "runs": []
+}

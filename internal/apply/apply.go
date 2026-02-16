@@ -93,6 +93,9 @@ func ApplyDryRun(planPath, outDir string) error {
 	if err := json.Unmarshal(raw, &plan); err != nil {
 		return fmt.Errorf("invalid plan json: %s", err.Error())
 	}
+	if len(plan.Runs) == 0 {
+		return fmt.Errorf("runs[] must not be empty")
+	}
 
 	// Deterministic: ensure runs are sorted by run_id even if the input plan wasn't.
 	seen := map[string]int{}
