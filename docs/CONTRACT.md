@@ -111,7 +111,7 @@ Required:
   - `right` (string)
 Notes:
 - Unknown fields in `config.yaml` are rejected (strict decode).
-- `left` and `right` are object-key style paths: relative, forward slashes (`/`), and **no** `.` or `..` segments.
+- `left` and `right` are object-key style paths: relative, forward slashes (`/`) only (no backslashes), and **no** `.` or `..` segments.
 
 
 ## Safety

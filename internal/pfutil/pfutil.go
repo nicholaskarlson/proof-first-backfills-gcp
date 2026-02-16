@@ -200,7 +200,7 @@ func ValidateObjectKey(k string) error {
 		return fmt.Errorf("empty")
 	}
 	if strings.Contains(k, "\\") {
-		return fmt.Errorf("must use forward slashes (/) only")
+		return fmt.Errorf("must not contain backslashes; use '/' only")
 	}
 	if strings.HasPrefix(k, "/") {
 		return fmt.Errorf("must be a relative path (no leading '/')")
