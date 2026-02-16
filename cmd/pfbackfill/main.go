@@ -257,7 +257,34 @@ func demo(outDir string) int {
 				}
 			} else {
 				// Apply-only fixture: exercise apply errors without changing render.
-				if err := apply.ApplyDryRun(planPath, applyOut); err != nil {
+				//
+				// PR23: if fixtures/input/<case>/apply/* exists, seed apply outputs from fixtures
+				// and run verify against them (expected-fail verify fixtures).
+				seedApply := filepath.Join(inDir, "apply")
+				if _, err := os.Stat(seedApply); err == nil {
+					if err := pfutil.ResetOutDir(applyOut); err != nil {
+						_ = writeError(applyOut, err.Error())
+					} else if err := pfutil.CopyTree(seedApply, applyOut); err != nil {
+						_ = writeError(applyOut, err.Error())
+					} else {
+						verifyOut := filepath.Join(outCase, "verify")
+						if err := verify.Verify(planPath, applyOut, verifyOut); err != nil {
+							_ = writeError(verifyOut, err.Error())
+						} else {
+							localOut := filepath.Join(outCase, "local")
+							seedDir := filepath.Join(inDir, "seed")
+							if _, err := os.Stat(seedDir); err == nil {
+								if err := pfutil.CopyTree(seedDir, outCase); err != nil {
+									_ = writeError(localOut, err.Error())
+								} else if err := local.Exec(planPath, localOut); err != nil {
+									_ = writeError(localOut, err.Error())
+								}
+							} else if err := local.Exec(planPath, localOut); err != nil {
+								_ = writeError(localOut, err.Error())
+							}
+						}
+					}
+				} else if err := apply.ApplyDryRun(planPath, applyOut); err != nil {
 					_ = writeError(applyOut, err.Error())
 				} else {
 					verifyOut := filepath.Join(outCase, "verify")
