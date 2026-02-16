@@ -111,7 +111,8 @@ On success, `--out` contains:
 - `manifest.sha256` (sha256 over `drift_report.json`)
 
 Notes:
-- `diff` verifies each pack’s `manifest.sha256` against the pack bytes before computing drift.
+- `diff` verifies each pack’s `manifest.sha256` *strictly* against the pack bytes before computing drift (coverage + sha match).
+- Pack manifest entries are validated as safe relative paths (no traversal, no backslashes).
 - Drift compares evidence files only (excludes `pack_manifest.json` and all `*/manifest.sha256` receipts).
 
 On failure, `--out` contains **only**:

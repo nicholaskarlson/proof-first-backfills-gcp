@@ -23,7 +23,7 @@ type DriftReport struct {
 }
 
 // readPackManifest reads and validates <packDir>/manifest.sha256 against the files in packDir.
-// It returns a map of relative path -> sha256 for entries in manifest.sha256.
+// It returns a map of relative path -> sha256 for entries in manifest.sha256, plus the sha256 of the manifest file bytes.
 func readPackManifest(packDir string) (map[string]string, string, error) {
 	mfPath := filepath.Join(packDir, "manifest.sha256")
 	b, err := os.ReadFile(mfPath)
@@ -40,26 +40,77 @@ func readPackManifest(packDir string) (map[string]string, string, error) {
 
 	lines := strings.Split(strings.TrimSpace(string(b)), "\n")
 	out := make(map[string]string, len(lines))
+
 	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
 		parts := strings.SplitN(line, "  ", 2)
 		if len(parts) != 2 {
-			continue
+			return nil, "", fmt.Errorf("invalid pack manifest line")
 		}
 		sha := strings.TrimSpace(parts[0])
 		fn := strings.TrimSpace(parts[1])
 		if sha == "" || fn == "" {
-			continue
+			return nil, "", fmt.Errorf("invalid pack manifest line")
+		}
+		if err := pfutil.ValidateObjectKey(fn); err != nil {
+			return nil, "", fmt.Errorf("invalid pack manifest entry: %s", fn)
 		}
 		out[fn] = sha
 	}
 
-	// Validate: for every entry, the file bytes must match its sha.
-	var fns []string
-	for fn := range out {
-		fns = append(fns, fn)
+	// Strict coverage: manifest entries must match the on-disk files (excluding manifest.sha256 itself).
+	files, err := pfutil.ListFiles(packDir)
+	if err != nil {
+		return nil, "", err
 	}
-	sort.Strings(fns)
-	for _, fn := range fns {
+	want := make([]string, 0, len(files))
+	for _, f := range files {
+		if f == "manifest.sha256" {
+			continue
+		}
+		want = append(want, f)
+	}
+
+	have := make([]string, 0, len(out))
+	for fn := range out {
+		have = append(have, fn)
+	}
+	sort.Strings(want)
+	sort.Strings(have)
+
+	wantSet := make(map[string]struct{}, len(want))
+	for _, f := range want {
+		wantSet[f] = struct{}{}
+	}
+	haveSet := make(map[string]struct{}, len(have))
+	for _, f := range have {
+		haveSet[f] = struct{}{}
+	}
+
+	var missing []string
+	for _, f := range want {
+		if _, ok := haveSet[f]; !ok {
+			missing = append(missing, f)
+		}
+	}
+	var extra []string
+	for _, f := range have {
+		if _, ok := wantSet[f]; !ok {
+			extra = append(extra, f)
+		}
+	}
+	if len(missing) > 0 {
+		return nil, "", fmt.Errorf("pack manifest missing entry: %s", missing[0])
+	}
+	if len(extra) > 0 {
+		return nil, "", fmt.Errorf("pack manifest has extra entry: %s", extra[0])
+	}
+
+	// Validate: for every entry, the file bytes must match its sha.
+	for _, fn := range have {
 		got, err := pfutil.Sha256File(filepath.Join(packDir, filepath.FromSlash(fn)))
 		if err != nil {
 			return nil, "", err
@@ -68,6 +119,7 @@ func readPackManifest(packDir string) (map[string]string, string, error) {
 			return nil, "", fmt.Errorf("pack manifest sha mismatch")
 		}
 	}
+
 	return out, mfSum, nil
 }
 

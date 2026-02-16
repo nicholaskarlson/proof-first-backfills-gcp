@@ -1,0 +1,13 @@
+{
+  "mode": "apply",
+  "cases": [
+    {
+      "case": "caseA",
+      "status": "ok"
+    },
+    {
+      "case": "caseB",
+      "status": "ok"
+    }
+  ]
+}
