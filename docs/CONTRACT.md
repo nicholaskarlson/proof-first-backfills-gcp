@@ -80,6 +80,43 @@ On success, `--out` contains:
 On failure, `--out` contains **only**:
 - `error.txt` (with trailing newline)
 
+
+
+### Pack (portable handoff kit)
+
+```bash
+pfbackfill pack --plan ./out/render/plan_manifest.json --apply ./out/apply --verify ./out/verify --local ./out/local --out ./out/pack
+```
+
+On success, `--out` contains:
+- `pack_manifest.json` (deterministic index)
+- `manifest.sha256` (sha256 over **all** files under `--out`, excluding `manifest.sha256` itself)
+- `plan/*`, `apply/*`, `verify/*`, `local/*` (portable copies of lane receipts)
+
+Notes:
+- `pack` verifies each lane manifest entry it depends on (e.g., `apply/manifest.sha256` must match `batch_report.json`).
+- `pack` is offline-only: it does not re-run lanes.
+
+On failure, `--out` contains **only**:
+- `error.txt` (with trailing newline)
+
+### Diff (drift between two packs)
+
+```bash
+pfbackfill diff --a ./packA --b ./packB --out ./out/diff
+```
+
+On success, `--out` contains:
+- `drift_report.json` (deterministic added/removed/changed evidence paths)
+- `manifest.sha256` (sha256 over `drift_report.json`)
+
+Notes:
+- `diff` verifies each pack’s `manifest.sha256` against the pack bytes before computing drift.
+- Drift compares evidence files only (excludes `pack_manifest.json` and all `*/manifest.sha256` receipts).
+
+On failure, `--out` contains **only**:
+- `error.txt` (with trailing newline)
+
 ### Demo (proof gate)
 
 ```bash

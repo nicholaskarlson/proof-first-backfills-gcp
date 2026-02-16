@@ -13,6 +13,7 @@ import (
 	yaml "gopkg.in/yaml.v3"
 
 	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/apply"
+	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/diff"
 	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/local"
 	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/model"
 	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/pack"
@@ -209,12 +210,24 @@ func demo(outDir string) int {
 			localOnly = true
 		}
 
+		diffOnly := false
+		if _, err := os.Stat(filepath.Join(inDir, "diff_only")); err == nil {
+			diffOnly = true
+		}
+
 		wantPack := false
 		if _, err := os.Stat(filepath.Join(expDir, "pack")); err == nil {
 			wantPack = true
 		}
 
-		if _, err := os.Stat(cfgPath); err == nil {
+		if diffOnly {
+			aPack := filepath.Join(inDir, "a_pack")
+			bPack := filepath.Join(inDir, "b_pack")
+			diffOut := filepath.Join(outCase, "diff")
+			if err := diff.Diff(aPack, bPack, diffOut); err != nil {
+				_ = writeError(diffOut, err.Error())
+			}
+		} else if _, err := os.Stat(cfgPath); err == nil {
 			// Render-based fixture: load config, render plan artifacts, then apply.
 			cfg, err := loadConfig(cfgPath)
 			if err != nil {
@@ -352,12 +365,12 @@ func demo(outDir string) int {
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("usage: pfbackfill <render|apply|verify|local|pack|demo> [args]")
+		fmt.Println("usage: pfbackfill <render|apply|verify|local|pack|diff|demo> [args]")
 		os.Exit(2)
 	}
 	cmd := os.Args[1]
 	if cmd == "-h" || cmd == "--help" || cmd == "help" {
-		fmt.Println("usage: pfbackfill <render|apply|verify|local|pack|demo> [args]")
+		fmt.Println("usage: pfbackfill <render|apply|verify|local|pack|diff|demo> [args]")
 		os.Exit(0)
 	}
 
@@ -436,6 +449,21 @@ func main() {
 			os.Exit(2)
 		}
 		if err := pack.Pack(*planPath, *applyDir, *verifyDir, *localDir, *outDir); err != nil {
+			_ = writeError(*outDir, err.Error())
+			os.Exit(1)
+		}
+
+	case "diff":
+		fs := flag.NewFlagSet("diff", flag.ExitOnError)
+		aDir := fs.String("a", "", "pack A directory (must contain manifest.sha256)")
+		bDir := fs.String("b", "", "pack B directory (must contain manifest.sha256)")
+		outDir := fs.String("out", "", "output directory (cleared)")
+		_ = fs.Parse(os.Args[2:])
+		if *aDir == "" || *bDir == "" || *outDir == "" {
+			fmt.Println("diff requires --a, --b, and --out")
+			os.Exit(2)
+		}
+		if err := diff.Diff(*aDir, *bDir, *outDir); err != nil {
 			_ = writeError(*outDir, err.Error())
 			os.Exit(1)
 		}
