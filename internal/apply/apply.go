@@ -93,26 +93,8 @@ func ApplyDryRun(planPath, outDir string) error {
 	if err := json.Unmarshal(raw, &plan); err != nil {
 		return fmt.Errorf("invalid plan json: %s", err.Error())
 	}
-	if len(plan.Runs) == 0 {
-		return fmt.Errorf("runs[] must not be empty")
-	}
-
-	// Deterministic: ensure runs are sorted by run_id even if the input plan wasn't.
-	seen := map[string]int{}
-	for i, r := range plan.Runs {
-		if err := pfutil.ValidateRunID(r.RunID); err != nil {
-			return fmt.Errorf("runs[%d] invalid run_id: %s", i, err.Error())
-		}
-		if prev, ok := seen[r.RunID]; ok {
-			return fmt.Errorf("runs[%d] duplicate run_id: %s (already in runs[%d])", i, r.RunID, prev)
-		}
-		seen[r.RunID] = i
-		if err := pfutil.ValidateObjectKey(r.Left); err != nil {
-			return fmt.Errorf("runs[%d] invalid left: %s", i, err.Error())
-		}
-		if err := pfutil.ValidateObjectKey(r.Right); err != nil {
-			return fmt.Errorf("runs[%d] invalid right: %s", i, err.Error())
-		}
+	if err := pfutil.ValidatePlanManifest(&plan); err != nil {
+		return err
 	}
 
 	runs := make([]RunReport, 0, len(plan.Runs))

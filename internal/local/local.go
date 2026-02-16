@@ -148,17 +148,14 @@ func Exec(planPath, outDir string) error {
 	if err := json.Unmarshal(planBytes, &plan); err != nil {
 		return fmt.Errorf("invalid plan_manifest.json: %w", err)
 	}
+	if err := pfutil.ValidatePlanManifest(&plan); err != nil {
+		return err
+	}
 
 	// Deterministic: process runs in sorted order by run_id.
 	runs := make([]model.PlanRun, 0, len(plan.Runs))
 	runs = append(runs, plan.Runs...)
 	sort.Slice(runs, func(i, j int) bool { return runs[i].RunID < runs[j].RunID })
-
-	for i, r := range runs {
-		if err := pfutil.ValidateRunID(r.RunID); err != nil {
-			return fmt.Errorf("runs[%d] invalid run_id: %s", i, err.Error())
-		}
-	}
 
 	created := 0
 	skipped := 0

@@ -60,9 +60,10 @@ Notes:
 
 Safety notes:
 - `run_id` and object keys (e.g., `left` / `right`) are validated as safe path segments.
-- Plan consumers (`apply`, `verify`) re-validate `left`/`right` as object keys (defense-in-depth for hand-edited plans).
-- Plan consumers (`apply`, `verify`) reject duplicate `run_id` values in `runs` (defense-in-depth for hand-edited plans).
-- Plan consumers (`apply`, `verify`) reject empty `runs[]` (defense-in-depth for hand-edited plans).
+- Plan consumers (`apply`, `verify`, `local`) reject missing/empty required plan metadata fields (project_id, region, input_bucket, output_bucket, service_name).
+- Plan consumers (`apply`, `verify`, `local`) re-validate `left`/`right` as object keys (defense-in-depth for hand-edited plans).
+- Plan consumers (`apply`, `verify`, `local`) reject duplicate `run_id` values in `runs` (defense-in-depth for hand-edited plans).
+- Plan consumers (`apply`, `verify`, `local`) reject empty `runs[]` (defense-in-depth for hand-edited plans).
 - Config decoding is strict: unknown `config.yaml` fields are rejected.
 
 On success, `--out` contains:
