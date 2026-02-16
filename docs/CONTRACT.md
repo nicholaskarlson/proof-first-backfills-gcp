@@ -44,6 +44,9 @@ On success, `--out` contains:
 - `verify_report.json` (deterministic verify-lane evidence)
 - `manifest.sha256` (sha256 over `verify_report.json`)
 
+Notes:
+- `verify` fails fast if `apply/manifest.sha256` doesn’t match `batch_report.json` (tamper/corruption defense).
+
 On failure, `--out` contains **only**:
 - `error.txt` (with trailing newline)
 
