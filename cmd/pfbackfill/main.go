@@ -220,7 +220,19 @@ func demo(outDir string) int {
 			wantPack = true
 		}
 
-		if diffOnly {
+		packOnly := false
+		if _, err := os.Stat(filepath.Join(inDir, "pack_only")); err == nil {
+			packOnly = true
+		}
+		if packOnly {
+			packOut := filepath.Join(outCase, "pack")
+			applyDir := filepath.Join(inDir, "apply")
+			verifyDir := filepath.Join(inDir, "verify")
+			localDir := filepath.Join(inDir, "local")
+			if err := pack.Pack(planPath, applyDir, verifyDir, localDir, packOut); err != nil {
+				_ = writeError(packOut, err.Error())
+			}
+		} else if diffOnly {
 			aPack := filepath.Join(inDir, "a_pack")
 			bPack := filepath.Join(inDir, "b_pack")
 			diffOut := filepath.Join(outCase, "diff")
