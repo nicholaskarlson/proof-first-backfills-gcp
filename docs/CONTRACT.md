@@ -61,6 +61,7 @@ Notes:
 Safety notes:
 - `run_id` and object keys (e.g., `left` / `right`) are validated as safe path segments.
 - Plan consumers (`apply`, `verify`) re-validate `left`/`right` as object keys (defense-in-depth for hand-edited plans).
+- Plan consumers (`apply`, `verify`) reject duplicate `run_id` values in `runs` (defense-in-depth for hand-edited plans).
 - Config decoding is strict: unknown `config.yaml` fields are rejected.
 
 On success, `--out` contains:

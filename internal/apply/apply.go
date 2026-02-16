@@ -95,10 +95,15 @@ func ApplyDryRun(planPath, outDir string) error {
 	}
 
 	// Deterministic: ensure runs are sorted by run_id even if the input plan wasn't.
+	seen := map[string]int{}
 	for i, r := range plan.Runs {
 		if err := pfutil.ValidateRunID(r.RunID); err != nil {
 			return fmt.Errorf("runs[%d] invalid run_id: %s", i, err.Error())
 		}
+		if prev, ok := seen[r.RunID]; ok {
+			return fmt.Errorf("runs[%d] duplicate run_id: %s (already in runs[%d])", i, r.RunID, prev)
+		}
+		seen[r.RunID] = i
 		if err := pfutil.ValidateObjectKey(r.Left); err != nil {
 			return fmt.Errorf("runs[%d] invalid left: %s", i, err.Error())
 		}
