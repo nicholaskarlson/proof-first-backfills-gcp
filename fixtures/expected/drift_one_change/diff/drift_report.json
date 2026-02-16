@@ -1,0 +1,10 @@
+{
+  "mode": "diff",
+  "a_manifest_sha256": "93da6cf39b8c6b8ab7f9b03ef4608c79522b232d6a59064e4aab6976a9915ad7",
+  "b_manifest_sha256": "b4fcaccb6891456b178fac9ee47ab36d6f823519c731723ebfae3132982ba1af",
+  "added": [],
+  "removed": [],
+  "changed": [
+    "apply/batch_report.json"
+  ]
+}
