@@ -1,0 +1,8 @@
+{
+  "mode": "pack",
+  "entries": [
+    "apply/batch_report.json",
+    "apply/manifest.sha256",
+    "pack_manifest.json"
+  ]
+}
