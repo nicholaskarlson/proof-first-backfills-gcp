@@ -1,0 +1,18 @@
+{
+  "mode": "pack",
+  "plan_sha256": "b856f35140333d24dcba65d654f64119f42db9a0fbc8f25e25d63918f1d72bfd",
+  "apply_batch_report_sha256": "c320c053f13866e5c46951d4c831c23a26a813d0c4d555544b41e3256c1b7aac",
+  "verify_report_sha256": "61333f609b6f6a0a60af8aae49991d5d417f94f09b943e84abf768144b717279",
+  "local_manifest_sha256": "3bd9a065012e960d5ea6c7ea22e0ac7dd1e27b3381bbb192516d8c95f700e616",
+  "entries": [
+    "apply/batch_report.json",
+    "apply/manifest.sha256",
+    "local/local_diff.json",
+    "local/local_report.json",
+    "local/manifest.sha256",
+    "plan/manifest.sha256",
+    "plan/plan_manifest.json",
+    "verify/manifest.sha256",
+    "verify/verify_report.json"
+  ]
+}
