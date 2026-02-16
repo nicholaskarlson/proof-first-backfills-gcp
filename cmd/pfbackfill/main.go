@@ -15,6 +15,7 @@ import (
 	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/apply"
 	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/local"
 	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/model"
+	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/pack"
 	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/pfutil"
 	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/verify"
 )
@@ -208,6 +209,11 @@ func demo(outDir string) int {
 			localOnly = true
 		}
 
+		wantPack := false
+		if _, err := os.Stat(filepath.Join(expDir, "pack")); err == nil {
+			wantPack = true
+		}
+
 		if _, err := os.Stat(cfgPath); err == nil {
 			// Render-based fixture: load config, render plan artifacts, then apply.
 			cfg, err := loadConfig(cfgPath)
@@ -233,9 +239,19 @@ func demo(outDir string) int {
 									_ = writeError(localOut, err.Error())
 								} else if err := local.Exec(planOut, localOut); err != nil {
 									_ = writeError(localOut, err.Error())
+								} else if wantPack {
+									packOut := filepath.Join(outCase, "pack")
+									if err := pack.Pack(planOut, applyOut, verifyOut, localOut, packOut); err != nil {
+										_ = writeError(packOut, err.Error())
+									}
 								}
 							} else if err := local.Exec(planOut, localOut); err != nil {
 								_ = writeError(localOut, err.Error())
+							} else if wantPack {
+								packOut := filepath.Join(outCase, "pack")
+								if err := pack.Pack(planOut, applyOut, verifyOut, localOut, packOut); err != nil {
+									_ = writeError(packOut, err.Error())
+								}
 							}
 						}
 					}
@@ -278,6 +294,11 @@ func demo(outDir string) int {
 									_ = writeError(localOut, err.Error())
 								} else if err := local.Exec(planPath, localOut); err != nil {
 									_ = writeError(localOut, err.Error())
+								} else if wantPack {
+									packOut := filepath.Join(outCase, "pack")
+									if err := pack.Pack(planPath, applyOut, verifyOut, localOut, packOut); err != nil {
+										_ = writeError(packOut, err.Error())
+									}
 								}
 							} else if err := local.Exec(planPath, localOut); err != nil {
 								_ = writeError(localOut, err.Error())
@@ -298,9 +319,19 @@ func demo(outDir string) int {
 								_ = writeError(localOut, err.Error())
 							} else if err := local.Exec(planPath, localOut); err != nil {
 								_ = writeError(localOut, err.Error())
+							} else if wantPack {
+								packOut := filepath.Join(outCase, "pack")
+								if err := pack.Pack(planPath, applyOut, verifyOut, localOut, packOut); err != nil {
+									_ = writeError(packOut, err.Error())
+								}
 							}
 						} else if err := local.Exec(planPath, localOut); err != nil {
 							_ = writeError(localOut, err.Error())
+						} else if wantPack {
+							packOut := filepath.Join(outCase, "pack")
+							if err := pack.Pack(planPath, applyOut, verifyOut, localOut, packOut); err != nil {
+								_ = writeError(packOut, err.Error())
+							}
 						}
 					}
 				}
@@ -321,11 +352,16 @@ func demo(outDir string) int {
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("usage: pfbackfill <render|apply|verify|local|demo> [args]")
+		fmt.Println("usage: pfbackfill <render|apply|verify|local|pack|demo> [args]")
 		os.Exit(2)
 	}
+	cmd := os.Args[1]
+	if cmd == "-h" || cmd == "--help" || cmd == "help" {
+		fmt.Println("usage: pfbackfill <render|apply|verify|local|pack|demo> [args]")
+		os.Exit(0)
+	}
 
-	switch os.Args[1] {
+	switch cmd {
 	case "render":
 		fs := flag.NewFlagSet("render", flag.ExitOnError)
 		cfgPath := fs.String("config", "", "path to config.yaml")
@@ -387,6 +423,23 @@ func main() {
 			_ = writeError(*outDir, err.Error())
 			os.Exit(1)
 		}
+	case "pack":
+		fs := flag.NewFlagSet("pack", flag.ExitOnError)
+		planPath := fs.String("plan", "", "path to plan_manifest.json (must have sibling manifest.sha256)")
+		applyDir := fs.String("apply", "", "apply output directory (must contain batch_report.json + manifest.sha256)")
+		verifyDir := fs.String("verify", "", "verify output directory (must contain verify_report.json + manifest.sha256)")
+		localDir := fs.String("local", "", "local output directory (must contain local_report.json + local_diff.json + manifest.sha256)")
+		outDir := fs.String("out", "", "output directory (cleared)")
+		_ = fs.Parse(os.Args[2:])
+		if *planPath == "" || *applyDir == "" || *verifyDir == "" || *localDir == "" || *outDir == "" {
+			fmt.Println("pack requires --plan, --apply, --verify, --local, and --out")
+			os.Exit(2)
+		}
+		if err := pack.Pack(*planPath, *applyDir, *verifyDir, *localDir, *outDir); err != nil {
+			_ = writeError(*outDir, err.Error())
+			os.Exit(1)
+		}
+
 	case "demo":
 		fs := flag.NewFlagSet("demo", flag.ExitOnError)
 		outDir := fs.String("out", "", "output directory (cleared)")
