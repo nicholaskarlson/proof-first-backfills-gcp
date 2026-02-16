@@ -108,7 +108,7 @@ func Verify(planPath, applyDir, outDir string) error {
 		return err
 	}
 	var plan model.PlanManifest
-	if err := json.Unmarshal(rawPlan, &plan); err != nil {
+	if err := pfutil.UnmarshalPlanManifestStrict(rawPlan, &plan); err != nil {
 		return fmt.Errorf("invalid plan json: %s", err.Error())
 	}
 	if err := pfutil.ValidatePlanManifest(&plan); err != nil {

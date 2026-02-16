@@ -64,6 +64,7 @@ Safety notes:
 - Plan consumers (`apply`, `verify`, `local`) re-validate `left`/`right` as object keys (defense-in-depth for hand-edited plans).
 - Plan consumers (`apply`, `verify`, `local`) reject duplicate `run_id` values in `runs` (defense-in-depth for hand-edited plans).
 - Plan consumers (`apply`, `verify`, `local`) reject empty `runs[]` (defense-in-depth for hand-edited plans).
+- Plan manifest decoding is strict: unknown `plan_manifest.json` fields are rejected.
 - Config decoding is strict: unknown `config.yaml` fields are rejected.
 
 On success, `--out` contains:
