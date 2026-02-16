@@ -1,0 +1,19 @@
+{
+  "project_id": "demo-proj",
+  "region": "us-central1",
+  "input_bucket": "demo-input-bucket",
+  "output_bucket": "demo-output-bucket",
+  "service_name": "pfbackfill",
+  "runs": [
+    {
+      "run_id": "caseA",
+      "left": "left.csv",
+      "right": "right.csv"
+    },
+    {
+      "run_id": "caseA",
+      "left": "left2.csv",
+      "right": "right2.csv"
+    }
+  ]
+}
