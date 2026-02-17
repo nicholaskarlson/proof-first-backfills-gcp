@@ -37,3 +37,7 @@ Fixtures + goldens live in:
 
 - `fixtures/input/**`
 - `fixtures/expected/**`
+
+Book 4 fixtures (Chapter 3):
+
+- `case01_plan_manifest_smoke` — render plan_manifest.json + manifest.sha256 (smoke)
