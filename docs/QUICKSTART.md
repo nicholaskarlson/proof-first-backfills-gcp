@@ -89,6 +89,12 @@ Then run the local execution lane (no cloud):
 go run ./cmd/pfbackfill local   --plan ./out/render/plan_manifest.json   --out ./out/local
 ```
 
+Then produce the cloud planning artifact (offline-only):
+
+```bash
+go run ./cmd/pfbackfill cloud-plan   --plan ./out/render/plan_manifest.json   --out ./out/cloud
+```
+
 Expected outputs:
 
 ```bash
@@ -96,6 +102,7 @@ ls -1 ./out/render
 ls -1 ./out/apply
 ls -1 ./out/verify
 ls -1 ./out/local
+ls -1 ./out/cloud
 ```
 
 Run an expected-fail fixture:

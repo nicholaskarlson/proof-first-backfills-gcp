@@ -13,6 +13,7 @@ import (
 	yaml "gopkg.in/yaml.v3"
 
 	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/apply"
+	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/cloudplan"
 	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/diff"
 	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/local"
 	"github.com/nicholaskarlson/proof-first-backfills-gcp/internal/model"
@@ -215,6 +216,11 @@ func demo(outDir string) int {
 			diffOnly = true
 		}
 
+		cloudPlanOnly := false
+		if _, err := os.Stat(filepath.Join(inDir, "cloud_plan_only")); err == nil {
+			cloudPlanOnly = true
+		}
+
 		wantPack := false
 		if _, err := os.Stat(filepath.Join(expDir, "pack")); err == nil {
 			wantPack = true
@@ -283,7 +289,12 @@ func demo(outDir string) int {
 				}
 			}
 		} else if _, err := os.Stat(planPath); err == nil {
-			if localOnly {
+			if cloudPlanOnly {
+				cloudOut := filepath.Join(outCase, "cloud")
+				if err := cloudplan.Plan(planPath, cloudOut); err != nil {
+					_ = writeError(cloudOut, err.Error())
+				}
+			} else if localOnly {
 				// Local-only fixture: exercise local errors without apply/verify.
 				localOut := filepath.Join(outCase, "local")
 				seedDir := filepath.Join(inDir, "seed")
@@ -377,12 +388,12 @@ func demo(outDir string) int {
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("usage: pfbackfill <render|apply|verify|local|pack|diff|demo> [args]")
+		fmt.Println("usage: pfbackfill <render|apply|verify|local|cloud-plan|pack|diff|demo> [args]")
 		os.Exit(2)
 	}
 	cmd := os.Args[1]
 	if cmd == "-h" || cmd == "--help" || cmd == "help" {
-		fmt.Println("usage: pfbackfill <render|apply|verify|local|pack|diff|demo> [args]")
+		fmt.Println("usage: pfbackfill <render|apply|verify|local|cloud-plan|pack|diff|demo> [args]")
 		os.Exit(0)
 	}
 
@@ -448,6 +459,20 @@ func main() {
 			_ = writeError(*outDir, err.Error())
 			os.Exit(1)
 		}
+	case "cloud-plan":
+		fs := flag.NewFlagSet("cloud-plan", flag.ExitOnError)
+		planPath := fs.String("plan", "", "path to plan_manifest.json (must have sibling manifest.sha256)")
+		outDir := fs.String("out", "", "output directory (cleared)")
+		_ = fs.Parse(os.Args[2:])
+		if *planPath == "" || *outDir == "" {
+			fmt.Println("cloud-plan requires --plan and --out")
+			os.Exit(2)
+		}
+		if err := cloudplan.Plan(*planPath, *outDir); err != nil {
+			_ = writeError(*outDir, err.Error())
+			os.Exit(1)
+		}
+
 	case "pack":
 		fs := flag.NewFlagSet("pack", flag.ExitOnError)
 		planPath := fs.String("plan", "", "path to plan_manifest.json (must have sibling manifest.sha256)")

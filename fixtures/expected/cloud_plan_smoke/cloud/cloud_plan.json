@@ -1,0 +1,106 @@
+{
+  "mode": "cloud_plan",
+  "plan_sha256": "b856f35140333d24dcba65d654f64119f42db9a0fbc8f25e25d63918f1d72bfd",
+  "project_id": "demo-proj",
+  "region": "us-central1",
+  "service_name": "pf-drop",
+  "input_bucket": "demo-input-bucket",
+  "output_bucket": "demo-output-bucket",
+  "rules": {
+    "input_prefix": "in/",
+    "output_prefix": "out/",
+    "left_name": "left.csv",
+    "right_name": "right.csv",
+    "success_marker": "_SUCCESS.json",
+    "error_marker": "_ERROR.json"
+  },
+  "run_count": 2,
+  "runs": [
+    {
+      "run_id": "caseA",
+      "stage": {
+        "left": {
+          "source_object": "fixtures/demo/left.csv",
+          "dest_object": "in/caseA/left.csv"
+        },
+        "right": {
+          "source_object": "fixtures/demo/right.csv",
+          "dest_object": "in/caseA/right.csv"
+        }
+      },
+      "trigger_object": "in/caseA/right.csv",
+      "markers": {
+        "success_object": "out/caseA/_SUCCESS.json",
+        "error_object": "out/caseA/_ERROR.json"
+      }
+    },
+    {
+      "run_id": "caseB",
+      "stage": {
+        "left": {
+          "source_object": "fixtures/demo/left2.csv",
+          "dest_object": "in/caseB/left.csv"
+        },
+        "right": {
+          "source_object": "fixtures/demo/right2.csv",
+          "dest_object": "in/caseB/right.csv"
+        }
+      },
+      "trigger_object": "in/caseB/right.csv",
+      "markers": {
+        "success_object": "out/caseB/_SUCCESS.json",
+        "error_object": "out/caseB/_ERROR.json"
+      }
+    }
+  ],
+  "steps": [
+    {
+      "seq": 1,
+      "action": "stage_left",
+      "run_id": "caseA",
+      "bucket": "demo-input-bucket",
+      "source_object": "fixtures/demo/left.csv",
+      "dest_object": "in/caseA/left.csv"
+    },
+    {
+      "seq": 2,
+      "action": "stage_right",
+      "run_id": "caseA",
+      "bucket": "demo-input-bucket",
+      "source_object": "fixtures/demo/right.csv",
+      "dest_object": "in/caseA/right.csv"
+    },
+    {
+      "seq": 3,
+      "action": "poll_marker",
+      "run_id": "caseA",
+      "bucket": "demo-output-bucket",
+      "success_object": "out/caseA/_SUCCESS.json",
+      "error_object": "out/caseA/_ERROR.json"
+    },
+    {
+      "seq": 4,
+      "action": "stage_left",
+      "run_id": "caseB",
+      "bucket": "demo-input-bucket",
+      "source_object": "fixtures/demo/left2.csv",
+      "dest_object": "in/caseB/left.csv"
+    },
+    {
+      "seq": 5,
+      "action": "stage_right",
+      "run_id": "caseB",
+      "bucket": "demo-input-bucket",
+      "source_object": "fixtures/demo/right2.csv",
+      "dest_object": "in/caseB/right.csv"
+    },
+    {
+      "seq": 6,
+      "action": "poll_marker",
+      "run_id": "caseB",
+      "bucket": "demo-output-bucket",
+      "success_object": "out/caseB/_SUCCESS.json",
+      "error_object": "out/caseB/_ERROR.json"
+    }
+  ]
+}
