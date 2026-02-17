@@ -5,6 +5,7 @@
 - **Render lane:** deterministic plan artifacts you can review/diff.
 - **Apply lane:** deterministic batch evidence (currently **dry-run only**).
 - **Local lane:** deterministic local run-folder simulation (resumable, no cloud).
+- **Cloud-plan lane:** deterministic cloud execution plan artifact (offline; no network).
 
 ## Commands
 
@@ -81,6 +82,23 @@ On failure, `--out` contains **only**:
 - `error.txt` (with trailing newline)
 
 
+### Cloud-plan (offline planning lane)
+
+```bash
+pfbackfill cloud-plan --plan ./out/render/plan_manifest.json --out ./out/cloud
+```
+
+On success, `--out` contains:
+- `cloud_plan.json` (deterministic name mappings + ordering + marker keys)
+- `manifest.sha256` (sha256 over `cloud_plan.json`)
+
+Notes:
+- `cloud-plan` is **offline-only**: it does not upload or poll.
+- It proves **what would be done** (stage left, stage right, poll markers), in a deterministic order.
+
+On failure, `--out` contains **only**:
+- `error.txt` (with trailing newline)
+
 
 ### Pack (portable handoff kit)
 
@@ -136,6 +154,9 @@ Notes:
 
 - For local-only fixtures (those that also provide `fixtures/input/<case>/local_only`),
   demo runs `local` against that plan to exercise local expected-fail behavior without changing apply/verify.
+
+- For cloud-plan-only fixtures (those that also provide `fixtures/input/<case>/cloud_plan_only`),
+  demo runs `cloud-plan` against that plan to exercise deterministic cloud planning artifacts without apply/verify/local.
 
 
 ## Config schema (MVP)
