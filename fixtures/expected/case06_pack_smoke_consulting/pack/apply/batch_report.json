@@ -1,0 +1,23 @@
+{
+  "mode": "dry_run",
+  "plan_sha256": "35bcb0d9eb0d11fa0cacb0393e5d3e6b063a9a9cf884d661c058eae0336c7249",
+  "project_id": "book4-proj",
+  "region": "us-central1",
+  "service_name": "pf-backfill",
+  "input_bucket": "book4-input-bucket",
+  "output_bucket": "book4-output-bucket",
+  "runs": [
+    {
+      "run_id": "runA",
+      "left": "fixtures/demo/left2.csv",
+      "right": "fixtures/demo/right2.csv",
+      "status": "DRY_RUN"
+    },
+    {
+      "run_id": "runB",
+      "left": "fixtures/demo/left.csv",
+      "right": "fixtures/demo/right.csv",
+      "status": "DRY_RUN"
+    }
+  ]
+}

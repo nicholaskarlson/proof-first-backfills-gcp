@@ -48,3 +48,5 @@ Book 4 fixtures:
 - (Ch09) `case04_verify_smoke_consulting` — seed apply outputs and emit verify/verify_report.json + manifest.sha256 (receipt); demo continues with local lane
 - (Ch09) `case05_verify_apply_manifest_mismatch_expected_fail` — expected-fail verify lane (apply/manifest.sha256 mismatch) emits verify/error.txt
 
+- (Ch10) `case06_pack_smoke_consulting` — build a portable pack/ folder (pack_manifest.json + manifest.sha256 + lane receipts)
+
