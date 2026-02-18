@@ -50,3 +50,4 @@ Book 4 fixtures:
 
 - (Ch10) `case06_pack_smoke_consulting` — build a portable pack/ folder (pack_manifest.json + manifest.sha256 + lane receipts)
 
+- (Ch11) `case07_drift_one_change` — diff two packs and emit diff/drift_report.json + manifest.sha256 (drift receipt)
