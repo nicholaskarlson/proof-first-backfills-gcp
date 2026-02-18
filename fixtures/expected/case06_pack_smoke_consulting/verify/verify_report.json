@@ -1,0 +1,35 @@
+{
+  "mode": "dry_run",
+  "ok": true,
+  "plan_sha256": "35bcb0d9eb0d11fa0cacb0393e5d3e6b063a9a9cf884d661c058eae0336c7249",
+  "batch_report_sha256": "2aa3f861f4af68e36674d3fbca5e0e82855affa0a135a3bfb95531b65fff52be",
+  "run_count": 2,
+  "runs": [
+    {
+      "run_id": "runA",
+      "status": "DRY_RUN"
+    },
+    {
+      "run_id": "runB",
+      "status": "DRY_RUN"
+    }
+  ],
+  "checks": [
+    {
+      "name": "plan_manifest.sha256",
+      "ok": true
+    },
+    {
+      "name": "apply/manifest.sha256",
+      "ok": true
+    },
+    {
+      "name": "batch_report.plan_sha256",
+      "ok": true
+    },
+    {
+      "name": "batch_report.runs_match_plan",
+      "ok": true
+    }
+  ]
+}

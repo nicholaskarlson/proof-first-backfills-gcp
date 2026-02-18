@@ -1,0 +1,19 @@
+{
+  "project_id": "book4-proj",
+  "region": "us-central1",
+  "input_bucket": "book4-input-bucket",
+  "output_bucket": "book4-output-bucket",
+  "service_name": "pf-backfill",
+  "runs": [
+    {
+      "run_id": "runA",
+      "left": "fixtures/demo/left2.csv",
+      "right": "fixtures/demo/right2.csv"
+    },
+    {
+      "run_id": "runB",
+      "left": "fixtures/demo/left.csv",
+      "right": "fixtures/demo/right.csv"
+    }
+  ]
+}
