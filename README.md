@@ -38,6 +38,7 @@ Fixtures + goldens live in:
 - `fixtures/input/**`
 - `fixtures/expected/**`
 
-Book 4 fixtures (Chapter 3):
+Book 4 fixtures:
 
-- `case01_plan_manifest_smoke` — render plan_manifest.json + manifest.sha256 (smoke)
+- (Ch03) `case01_plan_manifest_smoke` — render plan_manifest.json + manifest.sha256 (smoke)
+- (Ch07) `case02_cloud_plan_consulting_smoke` — emit cloud/cloud_plan.json + manifest.sha256 (offline cloud planning; names-only review)

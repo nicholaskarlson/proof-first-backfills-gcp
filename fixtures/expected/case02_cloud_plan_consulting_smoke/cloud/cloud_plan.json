@@ -1,0 +1,106 @@
+{
+  "mode": "cloud_plan",
+  "plan_sha256": "35bcb0d9eb0d11fa0cacb0393e5d3e6b063a9a9cf884d661c058eae0336c7249",
+  "project_id": "book4-proj",
+  "region": "us-central1",
+  "service_name": "pf-backfill",
+  "input_bucket": "book4-input-bucket",
+  "output_bucket": "book4-output-bucket",
+  "rules": {
+    "input_prefix": "in/",
+    "output_prefix": "out/",
+    "left_name": "left.csv",
+    "right_name": "right.csv",
+    "success_marker": "_SUCCESS.json",
+    "error_marker": "_ERROR.json"
+  },
+  "run_count": 2,
+  "runs": [
+    {
+      "run_id": "runA",
+      "stage": {
+        "left": {
+          "source_object": "fixtures/demo/left2.csv",
+          "dest_object": "in/runA/left.csv"
+        },
+        "right": {
+          "source_object": "fixtures/demo/right2.csv",
+          "dest_object": "in/runA/right.csv"
+        }
+      },
+      "trigger_object": "in/runA/right.csv",
+      "markers": {
+        "success_object": "out/runA/_SUCCESS.json",
+        "error_object": "out/runA/_ERROR.json"
+      }
+    },
+    {
+      "run_id": "runB",
+      "stage": {
+        "left": {
+          "source_object": "fixtures/demo/left.csv",
+          "dest_object": "in/runB/left.csv"
+        },
+        "right": {
+          "source_object": "fixtures/demo/right.csv",
+          "dest_object": "in/runB/right.csv"
+        }
+      },
+      "trigger_object": "in/runB/right.csv",
+      "markers": {
+        "success_object": "out/runB/_SUCCESS.json",
+        "error_object": "out/runB/_ERROR.json"
+      }
+    }
+  ],
+  "steps": [
+    {
+      "seq": 1,
+      "action": "stage_left",
+      "run_id": "runA",
+      "bucket": "book4-input-bucket",
+      "source_object": "fixtures/demo/left2.csv",
+      "dest_object": "in/runA/left.csv"
+    },
+    {
+      "seq": 2,
+      "action": "stage_right",
+      "run_id": "runA",
+      "bucket": "book4-input-bucket",
+      "source_object": "fixtures/demo/right2.csv",
+      "dest_object": "in/runA/right.csv"
+    },
+    {
+      "seq": 3,
+      "action": "poll_marker",
+      "run_id": "runA",
+      "bucket": "book4-output-bucket",
+      "success_object": "out/runA/_SUCCESS.json",
+      "error_object": "out/runA/_ERROR.json"
+    },
+    {
+      "seq": 4,
+      "action": "stage_left",
+      "run_id": "runB",
+      "bucket": "book4-input-bucket",
+      "source_object": "fixtures/demo/left.csv",
+      "dest_object": "in/runB/left.csv"
+    },
+    {
+      "seq": 5,
+      "action": "stage_right",
+      "run_id": "runB",
+      "bucket": "book4-input-bucket",
+      "source_object": "fixtures/demo/right.csv",
+      "dest_object": "in/runB/right.csv"
+    },
+    {
+      "seq": 6,
+      "action": "poll_marker",
+      "run_id": "runB",
+      "bucket": "book4-output-bucket",
+      "success_object": "out/runB/_SUCCESS.json",
+      "error_object": "out/runB/_ERROR.json"
+    }
+  ]
+}
