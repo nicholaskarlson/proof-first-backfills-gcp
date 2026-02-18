@@ -45,3 +45,6 @@ Book 4 fixtures:
 
 - (Ch08) `case03_apply_smoke_consulting` — apply dry-run and emit apply/batch_report.json + manifest.sha256 (receipt); demo continues with verify/local lanes
 
+- (Ch09) `case04_verify_smoke_consulting` — seed apply outputs and emit verify/verify_report.json + manifest.sha256 (receipt); demo continues with local lane
+- (Ch09) `case05_verify_apply_manifest_mismatch_expected_fail` — expected-fail verify lane (apply/manifest.sha256 mismatch) emits verify/error.txt
+
